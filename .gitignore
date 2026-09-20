@@ -27,3 +27,5 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+.vercel
