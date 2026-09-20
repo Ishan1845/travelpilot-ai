@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "frontend/dist",
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/itinerary/:match*",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/agent/:match*",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/quotes/:match*",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/api/:match*",
+      "destination": "/api/index.py"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

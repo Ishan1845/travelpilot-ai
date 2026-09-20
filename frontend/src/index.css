@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    image-rendering: -webkit-optimize-contrast;
+  }
+
+  body {
+    background-color: #fcfbf9;
+    color: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Indian Flag Full Vibrant Subtle Background */
+.indian-flag-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.16;
+  background: linear-gradient(
+    180deg,
+    #FF9933 0%,
+    rgba(255, 153, 51, 0.35) 28%,
+    rgba(255, 255, 255, 0.98) 36%,
+    rgba(255, 255, 255, 0.98) 64%,
+    rgba(19, 136, 8, 0.35) 72%,
+    #138808 100%
+  );
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+/* Watermark Ashoka Chakra in the center of the background */
+.ashoka-chakra-watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;
+  height: 520px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.08;
+}
+
+/* Sharp Card Hover Effects (Zero Blur) */
+.card-3d {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.card-3d:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 24px -4px rgba(15, 23, 42, 0.08), 0 6px 12px -4px rgba(15, 23, 42, 0.04);
+}
+
+/* Aurora UI Glowing Gradients matching User Palette: Electric Blue (#007BFF), Vibrant Orange (#FF6A00), Warm Orange (#FF8800), White (#FFFFFF) */
+.aurora-mesh {
+  background: 
+    radial-gradient(circle at 15% 15%, rgba(0, 123, 255, 0.35) 0%, transparent 45%),
+    radial-gradient(circle at 85% 25%, rgba(255, 106, 0, 0.32) 0%, transparent 48%),
+    radial-gradient(circle at 50% 85%, rgba(255, 136, 0, 0.28) 0%, transparent 52%),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.15) 0%, transparent 35%);
+}
+
+.aurora-glow-button {
+  background: linear-gradient(135deg, #007BFF 0%, #FF6A00 50%, #FF8800 100%);
+  box-shadow: 0 4px 20px -2px rgba(0, 123, 255, 0.4), 0 4px 25px -2px rgba(255, 106, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aurora-glow-button:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px 2px rgba(0, 123, 255, 0.5), 0 8px 35px 2px rgba(255, 106, 0, 0.45);
+}
+
+.aurora-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.aurora-card-interactive {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.aurora-card-interactive:hover {
+  border-color: rgba(0, 123, 255, 0.6);
+  box-shadow: 0 12px 30px -4px rgba(0, 123, 255, 0.25), 0 8px 25px -4px rgba(255, 106, 0, 0.2);
+  transform: translateY(-4px);
+}
+
+/* Airplane Takeoff Animation Across Screen from bottom-left to top-right */
+@keyframes planeTakeoff {
+  0% {
+    transform: translate(-10vw, 110vh) rotate(-35deg) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(110vw, -30vh) rotate(-42deg) scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-plane-takeoff {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  animation: planeTakeoff 2.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

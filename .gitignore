@@ -1,0 +1,29 @@
+# Node
+node_modules/
+dist/
+.vite/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
