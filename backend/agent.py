@@ -613,7 +613,7 @@ def find_matching_place(
     ]:
         cleaned = re.sub(filler, ' ', cleaned)
     cleaned = cleaned.strip(" ?.!:,;\"'")
-    if cleaned and len(cleaned) >= 3 and not re.search(r'^(it|this|that|here|place|trip|schedule)$', cleaned):
+    if cleaned and len(cleaned) >= 3 and not re.search(r'^(it|this|that|here|place|this place|that place|the place|spot|trip|schedule)$', cleaned):
         clean_target_q = re.sub(r'[^a-z0-9]', '', cleaned)
         for city_key, pois in SAMPLE_POIS.items():
             for poi in pois:
