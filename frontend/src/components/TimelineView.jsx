@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Clock, MapPin, IndianRupee, Ban, Sparkles, Navigation, 
-  CheckCircle, AlertTriangle, Users, Camera, Star, ArrowRight 
+  CheckCircle, AlertTriangle, Users, ExternalLink 
 } from 'lucide-react';
 
 export default function TimelineView({ itinerary, onCancelStop, cancellingStopId, onSelectStop }) {
@@ -147,21 +147,6 @@ export default function TimelineView({ itinerary, onCancelStop, cancellingStopId
                         <span>{stop.time_slot?.start} – {stop.time_slot?.end}</span>
                       </div>
 
-                      {/* PHOTOS AND REVIEWS BUTTON / BADGE */}
-                      <button
-                        type="button"
-                        onClick={() => onSelectStop && onSelectStop(stop)}
-                        className="inline-flex items-center gap-1.5 text-xs font-black text-sky-700 hover:text-white bg-sky-50 hover:bg-sky-600 border border-sky-200 hover:border-sky-600 px-3.5 py-1 rounded-xl shadow-2xs transition-all cursor-pointer group/btn"
-                        title="Click to view real photos and 6 verified traveler reviews"
-                      >
-                        <Camera className="w-3.5 h-3.5 text-sky-600 group-hover/btn:text-white" />
-                        <span>Photos and Reviews</span>
-                        <span className="flex items-center text-[11px] text-amber-500 ml-0.5 font-bold">
-                          <Star className="w-3 h-3 fill-amber-400 text-amber-400 inline mr-0.5" />
-                          4.8
-                        </span>
-                      </button>
-
                       {isAlternative && (
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-0.5 rounded-full">
                           <Sparkles className="w-3 h-3 text-amber-600" />
@@ -177,16 +162,20 @@ export default function TimelineView({ itinerary, onCancelStop, cancellingStopId
                       )}
                     </div>
 
-                    {/* Landmark Activity Title */}
-                    <div 
-                      onClick={() => onSelectStop && onSelectStop(stop)}
-                      className="cursor-pointer group/title"
-                      title="Click to view real photos, ratings & authentic traveler reviews"
-                    >
-                      <h4 className={`text-lg font-black tracking-tight group-hover/title:text-sky-600 transition-colors flex items-center gap-2 ${isCancelled ? 'line-through text-slate-400' : 'text-slate-900'}`}>
-                        <span>{stop.activity}</span>
-                        <ArrowRight className="w-4 h-4 text-sky-500 opacity-0 group-hover/title:opacity-100 group-hover/title:translate-x-1 transition-all" />
-                      </h4>
+                    {/* Landmark Activity Title - Click to open Google Photos, Ratings & Reviews */}
+                    <div>
+                      <a 
+                        href={`https://www.google.com/search?q=${encodeURIComponent(`${stop.activity} ${stop.location?.address || itinerary?.metadata?.destination || ''}`)}`}
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-block group/title cursor-pointer"
+                        title="Click to view real photos, ratings & authentic traveler reviews on Google"
+                      >
+                        <h4 className={`text-lg font-black tracking-tight group-hover/title:text-sky-600 group-hover/title:underline transition-colors flex items-center gap-1.5 ${isCancelled ? 'line-through text-slate-400' : 'text-slate-900'}`}>
+                          <span>{stop.activity}</span>
+                          <ExternalLink className="w-4 h-4 text-sky-500 opacity-60 group-hover/title:opacity-100 group-hover/title:translate-x-0.5 transition-all shrink-0" />
+                        </h4>
+                      </a>
                     </div>
 
                     {/* Address with MapPin */}
@@ -204,16 +193,14 @@ export default function TimelineView({ itinerary, onCancelStop, cancellingStopId
                       {stopGroupTotal > 0 ? (
                         <>
                           <span className="text-[11px] text-slate-400 uppercase font-bold block">
-                            Est. Cost ({members} Person{members > 1 ? 's' : ''})
+                            {members > 1 ? `Est. Total (${members} Persons)` : 'Ticket / Entry Fee'}
                           </span>
                           <span className="text-lg font-black text-emerald-700">
                             ₹{stopGroupTotal.toLocaleString('en-IN')}
                           </span>
-                          {members > 1 && (
-                            <span className="text-[10px] text-slate-400 block font-medium">
-                              (₹{Number(stop.estimated_cost || 0).toLocaleString('en-IN')}/person)
-                            </span>
-                          )}
+                          <span className="text-[11px] text-slate-600 block font-semibold mt-0.5">
+                            ₹{Number(stop.estimated_cost || 0).toLocaleString('en-IN')}/person
+                          </span>
                         </>
                       ) : (
                         <>
@@ -224,7 +211,7 @@ export default function TimelineView({ itinerary, onCancelStop, cancellingStopId
                             Free Entry
                           </span>
                           <span className="text-[10px] text-slate-400 block font-medium mt-0.5">
-                            (No Ticket Required)
+                            (₹0 / No Ticket Required)
                           </span>
                         </>
                       )}

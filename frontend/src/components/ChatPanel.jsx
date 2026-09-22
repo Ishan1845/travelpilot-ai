@@ -1,11 +1,75 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, Sparkles, Loader2, MessageSquare, X } from 'lucide-react';
+import { Send, Bot, User, Sparkles, Loader2, MessageSquare, X, ExternalLink } from 'lucide-react';
 
 const SUGGESTED_QUESTIONS = [
   "What should I do tomorrow morning?",
   "Which activities are close to each other?",
   "What local food should I try?"
 ];
+
+function renderMessageContent(text, isUser) {
+  if (!text) return null;
+
+  const lines = text.split('\n');
+
+  return lines.map((line, lIdx) => {
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = linkRegex.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(line.substring(lastIndex, match.index));
+      }
+      const label = match[1];
+      const url = match[2];
+      parts.push(
+        <a
+          key={`link-${match.index}`}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`inline-flex items-center gap-1 font-bold underline transition-colors mx-0.5 ${
+            isUser ? 'text-amber-200 hover:text-white' : 'text-sky-600 hover:text-sky-800'
+          }`}
+        >
+          <span>{label}</span>
+          <ExternalLink className="w-3 h-3 shrink-0 inline" />
+        </a>
+      );
+      lastIndex = linkRegex.lastIndex;
+    }
+
+    if (lastIndex < line.length) {
+      parts.push(line.substring(lastIndex));
+    }
+
+    const renderedParts = parts.map((part, pIdx) => {
+      if (typeof part === 'string') {
+        const boldSegments = part.split(/(\*\*[^*]+\*\*)/g);
+        return boldSegments.map((segment, sIdx) => {
+          if (segment.startsWith('**') && segment.endsWith('**')) {
+            return (
+              <strong key={`b-${pIdx}-${sIdx}`} className="font-extrabold">
+                {segment.slice(2, -2)}
+              </strong>
+            );
+          }
+          return segment;
+        });
+      }
+      return part;
+    });
+
+    return (
+      <React.Fragment key={`line-${lIdx}`}>
+        {renderedParts}
+        {lIdx < lines.length - 1 && <br />}
+      </React.Fragment>
+    );
+  });
+}
 
 export default function ChatPanel({ itinerary, onSendMessage, messages, isLoading, onClose }) {
   const [input, setInput] = useState("");
@@ -105,7 +169,7 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
                   : 'bg-slate-50 border border-slate-200/80 text-slate-800 rounded-tl-xs shadow-xs'
               }`}
             >
-              {msg.text}
+              {renderMessageContent(msg.text, msg.role === 'user')}
             </div>
             {msg.role === 'user' && (
               <div className="w-7 h-7 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center shrink-0 mt-0.5">
