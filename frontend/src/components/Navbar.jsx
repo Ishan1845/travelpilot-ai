@@ -65,11 +65,9 @@ export default function Navbar({ activePage, setActivePage, onTriggerNewTrip, sa
           >
             <Bookmark className="w-3.5 h-3.5 text-amber-600" />
             <span>Saved History</span>
-            {savedCount > 0 && (
-              <span className="w-4 h-4 bg-amber-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center">
-                {savedCount}
-              </span>
-            )}
+            <span className="min-w-4 px-1 h-4 bg-amber-500 text-white text-[9px] font-extrabold rounded-full flex items-center justify-center">
+              {savedCount || 0}
+            </span>
           </button>
         </nav>
 

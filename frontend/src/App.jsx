@@ -6,7 +6,6 @@ import ShowcasePage from './components/ShowcasePage';
 import TripForm from './components/TripForm';
 import TimelineView from './components/TimelineView';
 import TransportationCard from './components/TransportationCard';
-import DisruptionBanner from './components/DisruptionBanner';
 import ChatPanel from './components/ChatPanel';
 import Dashboard from './components/Dashboard';
 import HistoryPage from './components/HistoryPage';
@@ -118,12 +117,14 @@ export default function App() {
       return false;
     }
 
+    const uniqueId = itin.id || itin.trip_id || `saved_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
     const tripRecord = {
       ...itin,
-      id: itin.trip_id || `saved_${Date.now()}`,
-      monument_name: monumentName || itin.metadata?.destination,
-      saved_at: new Date().toISOString(),
-      personal_notes: ""
+      id: uniqueId,
+      trip_id: uniqueId,
+      monument_name: monumentName || itin.monument_name || itin.metadata?.destination || "Custom Itinerary",
+      saved_at: itin.saved_at || new Date().toISOString(),
+      personal_notes: itin.personal_notes || ""
     };
 
     setSavedTrips((prev) => [tripRecord, ...prev]);
@@ -508,8 +509,35 @@ export default function App() {
     setActivePage('planner');
   };
 
-  const handleDeleteTripFromHistory = (tripId) => {
-    setSavedTrips(prev => prev.filter(t => (t.trip_id || t.id) !== tripId));
+  const handleDeleteTripFromHistory = (tripId, tripIndex) => {
+    setSavedTrips(prev => {
+      const updated = prev.filter((t, idx) => {
+        const id = t.id || t.trip_id;
+        if (tripId && id === tripId) return false;
+        if (typeof tripIndex === 'number' && idx === tripIndex) return false;
+        return true;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error("Error saving updated trips to localStorage:", e);
+      }
+      return updated;
+    });
+    setSaveToast("Trip deleted from history.");
+    setTimeout(() => setSaveToast(null), 2500);
+  };
+
+  const handleDeleteAllTrips = () => {
+    setSavedTrips([]);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(DRAFT_STORAGE_KEY);
+    } catch (e) {
+      console.error("Error clearing saved history from localStorage:", e);
+    }
+    setSaveToast("All saved trips deleted.");
+    setTimeout(() => setSaveToast(null), 2500);
   };
 
   const handleUpdateNotesInHistory = (tripId, notes) => {
@@ -569,16 +597,6 @@ export default function App() {
           />
         ) : (
           <>
-            {/* Dynamic Disruption Banner */}
-            {disruptionData && activePage === 'planner' && (
-              <DisruptionBanner 
-                summary={disruptionData.summary}
-                affectedDay={disruptionData.affectedDay}
-                alternativeName={disruptionData.alternativeName}
-                onClose={() => setDisruptionData(null)}
-              />
-            )}
-
             {/* PAGE 1: SHOWCASE & MONUMENTS */}
             {activePage === 'showcase' && (
               <ShowcasePage 
@@ -762,6 +780,7 @@ export default function App() {
               setActivePage('planner');
             }}
             onDeleteTrip={handleDeleteTripFromHistory}
+            onDeleteAllTrips={handleDeleteAllTrips}
             onUpdateNotes={handleUpdateNotesInHistory}
             onBack={() => {
               setItinerary(null);

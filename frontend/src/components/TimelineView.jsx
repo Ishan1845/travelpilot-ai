@@ -236,10 +236,10 @@ export default function TimelineView({ itinerary, onCancelStop, cancellingStopId
                         disabled={isBeingCancelled}
                         onClick={() => onCancelStop && onCancelStop(stop.id, `User cancelled ${stop.activity}`)}
                         className="text-xs font-bold text-rose-600 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-xs disabled:opacity-50"
-                        title="Cancel this activity and trigger day rebuild"
+                        title="Cancel this activity"
                       >
                         <Ban className="w-3.5 h-3.5" />
-                        <span>{isBeingCancelled ? 'Rebuilding...' : 'Cancel Stop'}</span>
+                        <span>{isBeingCancelled ? 'Cancelling...' : 'Cancel Stop'}</span>
                       </button>
                     )}
                   </div>

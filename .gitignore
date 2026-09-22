@@ -29,3 +29,4 @@ Thumbs.db
 .idea/
 
 .vercel
+.env*

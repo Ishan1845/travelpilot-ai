@@ -10,6 +10,7 @@ export default function HistoryPage({
   onReloadTrip, 
   onOpenSelectedTrip,
   onDeleteTrip, 
+  onDeleteAllTrips,
   onUpdateNotes, 
   onBack 
 }) {
@@ -91,7 +92,7 @@ export default function HistoryPage({
                   Saved Itineraries & History
                 </h2>
                 <span className="text-xs font-bold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">
-                  {validTrips.length} Saved
+                  {validTrips.length} Saved {validTrips.length === 1 ? 'Trip' : 'Trips'}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
@@ -99,6 +100,23 @@ export default function HistoryPage({
               </p>
             </div>
           </div>
+
+          {/* Delete Every Trip (Clear All History) Button */}
+          {validTrips.length > 0 && onDeleteAllTrips && (
+            <button
+              type="button"
+              onClick={() => {
+                if (window.confirm("Are you sure you want to delete every saved trip from history? This cannot be undone.")) {
+                  onDeleteAllTrips();
+                }
+              }}
+              className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold text-rose-700 hover:text-white bg-rose-50 hover:bg-rose-600 border border-rose-200 hover:border-rose-600 rounded-xl transition-all cursor-pointer shadow-xs ml-auto sm:ml-0"
+              title="Delete every saved trip from history"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Every Trip</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -115,7 +133,7 @@ export default function HistoryPage({
         /* Saved List Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {validTrips.map((item, index) => {
-            const id = item.trip_id || item.id || `saved_${index}`;
+            const id = item.id || item.trip_id || `saved_${index}`;
             const meta = item.metadata || item || {};
             const totals = item.trip_totals || {};
             const isEditing = editingId === id;
@@ -257,7 +275,12 @@ export default function HistoryPage({
                 <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
-                    onClick={() => onDeleteTrip && onDeleteTrip(id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onDeleteTrip) {
+                        onDeleteTrip(id, index);
+                      }
+                    }}
                     className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
                     title="Delete saved trip"
                   >
