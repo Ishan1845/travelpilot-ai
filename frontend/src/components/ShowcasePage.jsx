@@ -168,7 +168,7 @@ const TESTIMONIALS = [
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
     rating: 5,
     verified: true,
-    review: "TravelPilot made discovering India effortless. Realistic ticket costs, zero hallucinations, and the AI Trip Copilot on the corner felt like having a local historian in our pocket at Agra and Kevadia."
+    review: "TravelPilot made discovering India effortless. Realistic ticket costs, zero hallucinations, and Namaste AI on the corner felt like having a local historian in our pocket at Agra and Kevadia."
   }
 ];
 

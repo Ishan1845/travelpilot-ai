@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Sparkles, Loader2, MessageSquare, X, ExternalLink } from 'lucide-react';
+import NamasteAvatar from './NamasteAvatar';
 
 const SUGGESTED_QUESTIONS = [
   "What should I do tomorrow morning?",
@@ -100,11 +101,12 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-xs">
-            <Bot className="w-4 h-4" />
-          </div>
+          <NamasteAvatar size={36} className="shadow-xs" />
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Trip Copilot</h3>
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+              <span>Namaste AI</span>
+              <span className="text-xs">🙏</span>
+            </h3>
             <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Grounded in Live Itinerary
@@ -117,7 +119,7 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-all cursor-pointer"
-            title="Close Trip Copilot"
+            title="Close Namaste AI"
           >
             <X className="w-5 h-5" />
           </button>
@@ -147,8 +149,9 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
       <div className="flex-1 overflow-y-auto pr-2 space-y-3.5 mb-4">
         {messages.length === 0 && (
           <div className="h-full flex flex-col items-center justify-center text-center p-4 text-slate-400">
-            <MessageSquare className="w-8 h-8 mb-2 text-slate-300" />
-            <p className="text-xs font-medium">Ask any question about your travel schedule, places to visit, food, or timings.</p>
+            <NamasteAvatar size={48} className="mb-2 opacity-90 shadow-sm" />
+            <p className="text-xs font-semibold text-slate-700">Namaste! How can I assist with your journey?</p>
+            <p className="text-[11px] text-slate-400 mt-1">Ask any question about your travel schedule, places to visit, food, or timings.</p>
           </div>
         )}
 
@@ -158,9 +161,7 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
             className={`flex items-start gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             {msg.role === 'agent' && (
-              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-                <Bot className="w-3.5 h-3.5" />
-              </div>
+              <NamasteAvatar size={28} className="mt-0.5 shadow-xs" />
             )}
             <div
               className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
@@ -181,12 +182,10 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
 
         {isLoading && (
           <div className="flex items-start gap-2.5 justify-start">
-            <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center shrink-0 mt-0.5">
-              <Bot className="w-3.5 h-3.5" />
-            </div>
+            <NamasteAvatar size={28} className="mt-0.5 shadow-xs animate-pulse" />
             <div className="bg-slate-50 border border-slate-200/80 text-slate-500 rounded-2xl rounded-tl-xs p-3 text-xs flex items-center gap-2">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-600" />
-              <span>Checking itinerary context...</span>
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-600" />
+              <span>Namaste AI is thinking...</span>
             </div>
           </div>
         )}

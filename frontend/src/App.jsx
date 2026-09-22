@@ -14,6 +14,7 @@ import AlreadySelectedModal from './components/AlreadySelectedModal';
 import RefreshSavePromptModal from './components/RefreshSavePromptModal';
 import TransportationPage from './components/TransportationPage';
 import Footer from './components/Footer';
+import NamasteAvatar from './components/NamasteAvatar';
 import { 
   Sparkles, Compass, MapPin, Calendar, IndianRupee, 
   ShieldCheck, AlertCircle, PlayCircle, Users, Bookmark, Check,
@@ -648,16 +649,16 @@ export default function App() {
                         <span>← Back</span>
                       </button>
 
-                      {/* Trip Copilot AI Live placed on the Left Corner */}
+                      {/* Namaste AI Live placed on the Left Corner */}
                       <button
                         type="button"
                         onClick={() => setIsCopilotOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl border border-sky-600 shadow-sm hover:shadow-md transition-all cursor-pointer"
-                        title="Open AI Trip Copilot assistant"
+                        className="flex items-center gap-2.5 px-4 py-2 bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white font-extrabold text-xs rounded-xl border border-orange-400/50 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                        title="Open Namaste AI assistant"
                       >
-                        <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
-                        <span>Trip Copilot AI Live</span>
-                        <span className="bg-sky-500/40 text-[10px] px-1.5 py-0.5 rounded-md text-sky-100 font-black">AI</span>
+                        <NamasteAvatar size={22} className="shadow-xs" />
+                        <span>Namaste AI</span>
+                        <span className="bg-white/25 text-[10px] px-1.5 py-0.5 rounded-md text-white font-black">AI</span>
                       </button>
                     </div>
 
@@ -848,17 +849,17 @@ export default function App() {
         </div>
       )}
 
-      {/* Floating One-Button Trip Copilot Trigger on Left Corner */}
+      {/* Floating One-Button Namaste AI Trigger on Left Corner */}
       {itinerary && activePage === 'planner' && !isCopilotOpen && (
         <button
           type="button"
           onClick={() => setIsCopilotOpen(true)}
-          className="fixed bottom-6 left-6 z-40 bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-800 text-white font-extrabold text-xs px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-2.5 transition-all hover:scale-105 cursor-pointer border-2 border-white/80 shadow-sky-500/30"
-          title="Open AI Trip Copilot"
+          className="fixed bottom-6 left-6 z-40 bg-gradient-to-r from-amber-600 via-orange-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white font-extrabold text-xs px-5 py-3 rounded-full shadow-2xl flex items-center gap-2.5 transition-all hover:scale-105 cursor-pointer border-2 border-white/90 shadow-orange-500/30"
+          title="Open Namaste AI"
         >
-          <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
-          <span>Trip Copilot AI Live</span>
-          <span className="bg-sky-500/50 text-[10px] px-2 py-0.5 rounded-full text-white font-black">AI</span>
+          <NamasteAvatar size={26} className="shadow-xs" />
+          <span>Namaste AI</span>
+          <span className="bg-white/30 text-[10px] px-2 py-0.5 rounded-full text-white font-black">AI</span>
         </button>
       )}
 
