@@ -278,7 +278,8 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           itinerary,
-          message: msgText
+          message: msgText,
+          history: chatMessages.slice(-8)
         })
       });
       if (!res.ok) {
@@ -360,17 +361,30 @@ export default function App() {
       console.error("Error checking reload state:", e);
     }
 
+    let hasSavedTrips = false;
+    let savedList = [];
+    try {
+      const rawSaved = localStorage.getItem(STORAGE_KEY);
+      if (rawSaved) {
+        const parsed = JSON.parse(rawSaved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          hasSavedTrips = true;
+          savedList = parsed;
+        }
+      }
+    } catch (e) {}
+
     let storedDraft = null;
     try {
       const rawDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
       if (rawDraft) storedDraft = JSON.parse(rawDraft);
     } catch (e) {}
 
-    if (wasRefreshed) {
-      // User refreshed the page: pop up "Want to save history or not (yes or no)"
+    // Only show refresh modal if page was refreshed AND there are actually trips saved in history
+    if (wasRefreshed && hasSavedTrips) {
       setRefreshPromptModal({
         isOpen: true,
-        trip: storedDraft
+        trip: storedDraft || (savedList.length > 0 ? savedList[0] : null)
       });
     } else if (storedDraft && storedDraft.metadata) {
       setItinerary(storedDraft);

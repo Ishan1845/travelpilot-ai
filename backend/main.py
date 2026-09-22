@@ -110,7 +110,7 @@ def chat_with_agent(request: ChatRequest):
     If the question implies a change/cancellation, triggers the disruption rebuild engine.
     """
     try:
-        reply, updated_itin, action = chat_agent(request.itinerary, request.message)
+        reply, updated_itin, action = chat_agent(request.itinerary, request.message, history=request.history)
         return ChatResponse(
             reply=reply,
             updated_itinerary=updated_itin,

@@ -108,6 +108,7 @@ class ValidateResponse(BaseModel):
 class ChatRequest(BaseModel):
     itinerary: Itinerary
     message: str
+    history: Optional[List[Dict[str, Any]]] = None
 
 class ChatResponse(BaseModel):
     reply: str

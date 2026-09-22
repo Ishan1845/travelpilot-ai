@@ -18,8 +18,8 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
   const todayStr = new Date().toISOString().split('T')[0];
   const defaultEnd = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const [origin, setOrigin] = useState(initialOrigin || "Vadodara");
-  const [destination, setDestination] = useState(initialDestination || "Agra");
+  const [origin, setOrigin] = useState(initialOrigin || "");
+  const [destination, setDestination] = useState(initialDestination || "");
   const [startDate, setStartDate] = useState(todayStr);
   const [endDate, setEndDate] = useState(defaultEnd);
   const [budget, setBudget] = useState(15000);
@@ -39,10 +39,16 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const orig = origin.trim() || "Vadodara";
-    const dest = destination.trim() || "Agra";
-    if (!origin.trim()) setOrigin("Vadodara");
-    if (!destination.trim()) setDestination("Agra");
+    const orig = origin.trim();
+    const dest = destination.trim();
+    if (!orig) {
+      alert("Please enter your starting location.");
+      return;
+    }
+    if (!dest) {
+      alert("Please enter your destination location.");
+      return;
+    }
     onGenerate({
       origin: orig,
       destination: dest,
@@ -78,7 +84,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
             <input
               type="text"
               required
-              placeholder="e.g. Vadodara, Delhi NCR, Mumbai, Bengaluru, Ahmedabad..."
+              placeholder="Enter starting city (e.g. Vadodara, Delhi, Mumbai, Bengaluru...)"
               value={origin}
               onChange={(e) => setOrigin(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm"
@@ -94,7 +100,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
             <input
               type="text"
               required
-              placeholder="e.g. Agra, Jaipur, Varanasi, Goa, Kerala, Delhi, Paris..."
+              placeholder="Enter destination city (e.g. Agra, Jaipur, Varanasi, Goa, Paris...)"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm"

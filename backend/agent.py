@@ -1,6 +1,9 @@
 import os
+import re
 import json
 import logging
+import urllib.parse
+import urllib.request
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional, Tuple
 
@@ -540,19 +543,37 @@ def is_travel_related(question: str, itinerary: Optional[Itinerary] = None) -> b
 
     return False
 
-def find_matching_place(query: str, itinerary: Optional[Itinerary] = None) -> Optional[Dict[str, Any]]:
+def find_matching_place(
+    query: str, 
+    itinerary: Optional[Itinerary] = None, 
+    history: Optional[List[Dict[str, Any]]] = None
+) -> Optional[Dict[str, Any]]:
     """
     Intelligently identifies which landmark or attraction the user is referring to,
     handling unspaced names (e.g. 'tajmahal', 'agrafort'), partial tokens,
-    itinerary stops, SAMPLE_POIS database, and pronouns ('it', 'this place').
+    itinerary stops, SAMPLE_POIS database across all cities, conversation history,
+    and pronouns ('it', 'this place').
     """
-    import re
     from poi_db import SAMPLE_POIS
 
     lower_q = query.lower().strip()
     clean_q = re.sub(r'[^a-z0-9]', '', lower_q)
 
-    # 1. Check current itinerary stops first
+    def format_place(name, full_name, category, city, cost, desc, stop_obj=None):
+        raw_city = city or (itinerary.metadata.destination if itinerary and itinerary.metadata else "")
+        clean_city = raw_city.split(" to ")[-1].strip() if " to " in raw_city else raw_city
+        return {
+            "name": name,
+            "full_name": full_name,
+            "category": category or "Landmarks",
+            "city": clean_city,
+            "cost": float(cost or 0),
+            "description": desc or "",
+            "notes": desc or "",
+            "stop_obj": stop_obj
+        }
+
+    # 1. Search directly in current itinerary stops
     if itinerary and itinerary.days:
         for day in itinerary.days:
             for stop in day.stops:
@@ -561,21 +582,12 @@ def find_matching_place(query: str, itinerary: Optional[Itinerary] = None) -> Op
                 clean_core = re.sub(r'[^a-z0-9]', '', core_act.lower())
                 clean_raw = re.sub(r'[^a-z0-9]', '', raw_act.lower())
 
-                if (clean_core and clean_core in clean_q) or (clean_raw and clean_raw in clean_q) or (core_act.lower() in lower_q):
-                    raw_dest = itinerary.metadata.destination if itinerary.metadata else ""
-                    dest = raw_dest.split(" to ")[-1].strip() if " to " in raw_dest else raw_dest
-                    return {
-                        "name": core_act,
-                        "full_name": raw_act,
-                        "category": stop.category or "Landmarks",
-                        "city": dest,
-                        "cost": stop.estimated_cost,
-                        "notes": stop.notes or "",
-                        "description": stop.notes or "",
-                        "stop_obj": stop
-                    }
+                if (clean_core and len(clean_core) >= 3 and clean_core in clean_q) or \
+                   (clean_raw and len(clean_raw) >= 3 and clean_raw in clean_q) or \
+                   (core_act.lower() in lower_q):
+                    return format_place(core_act, raw_act, stop.category, None, stop.estimated_cost, stop.notes, stop)
 
-    # 2. Check across SAMPLE_POIS database across all cities
+    # 2. Search across SAMPLE_POIS database across all cities
     for city_key, pois in SAMPLE_POIS.items():
         for poi in pois:
             raw_name = poi["name"]
@@ -583,157 +595,116 @@ def find_matching_place(query: str, itinerary: Optional[Itinerary] = None) -> Op
             clean_core = re.sub(r'[^a-z0-9]', '', core_name.lower())
             clean_raw = re.sub(r'[^a-z0-9]', '', raw_name.lower())
 
-            if (clean_core and len(clean_core) >= 4 and clean_core in clean_q) or (clean_raw and len(clean_raw) >= 4 and clean_raw in clean_q) or (core_name.lower() in lower_q):
-                return {
-                    "name": core_name,
-                    "full_name": raw_name,
-                    "category": poi.get("category", "Landmarks"),
-                    "city": poi.get("city", city_key.capitalize()),
-                    "cost": poi.get("avg_cost", 0.0),
-                    "notes": poi.get("description", ""),
-                    "description": poi.get("description", "")
-                }
+            if (clean_core and len(clean_core) >= 4 and clean_core in clean_q) or \
+               (clean_raw and len(clean_raw) >= 4 and clean_raw in clean_q) or \
+               (core_name.lower() in lower_q):
+                return format_place(core_name, raw_name, poi.get("category"), poi.get("city", city_key.capitalize()), poi.get("avg_cost"), poi.get("description"))
 
-    # 3. Contextual Pronoun Fallback: if user asked using 'it', 'this', 'that', 'here', 'this place'
-    pronoun_pattern = r'\b(it|this|that|here|this place|the place|spot|landmark)\b'
-    if re.search(pronoun_pattern, lower_q):
-        if itinerary and itinerary.days and itinerary.days[0].stops:
-            first_stop = itinerary.days[0].stops[0]
-            raw_act = first_stop.activity
-            core_act = raw_act.split('(')[0].split('&')[0].strip()
-            raw_dest = itinerary.metadata.destination if itinerary.metadata else ""
-            dest = raw_dest.split(" to ")[-1].strip() if " to " in raw_dest else raw_dest
-            return {
-                "name": core_act,
-                "full_name": raw_act,
-                "category": first_stop.category or "Landmarks",
-                "city": dest,
-                "cost": first_stop.estimated_cost,
-                "notes": first_stop.notes or "",
-                "description": first_stop.notes or "",
-                "stop_obj": first_stop
-            }
+    # 3. Clean query to extract requested landmark name (e.g. "link of fatehpur sikri" -> "fatehpur sikri")
+    cleaned = lower_q
+    for filler in [
+        r'\bcan you\b', r'\bcould you\b', r'\bplease\b', r'\bgive me\b', r'\bsend me\b',
+        r'\bsend\b', r'\bshow me\b', r'\bshow\b', r'\blink of\b', r'\blink for\b', r'\blink\b',
+        r'\burl of\b', r'\bwebsite of\b', r'\bwebsite for\b', r'\bwebsite\b', r'\bredirect me to\b',
+        r'\bredirect to\b', r'\bredirect\b', r'\bphotos of\b', r'\breviews of\b', r'\bdetails on\b',
+        r'\bdetails of\b', r'\bmore info on\b', r'\bmore info about\b', r'\btell me more about\b',
+        r'\btell me about\b', r'\bwhat about\b', r'\bhow to visit\b', r'\bthe\b', r'\bof\b', r'\bfor\b',
+        r'\bto\b', r'\ba\b', r'\ban\b', r'\bin\b', r'\bat\b'
+    ]:
+        cleaned = re.sub(filler, ' ', cleaned)
+    cleaned = cleaned.strip(" ?.!:,;\"'")
+    if cleaned and len(cleaned) >= 3 and not re.search(r'^(it|this|that|here|place|trip|schedule)$', cleaned):
+        clean_target_q = re.sub(r'[^a-z0-9]', '', cleaned)
+        for city_key, pois in SAMPLE_POIS.items():
+            for poi in pois:
+                p_core = poi["name"].split('(')[0].split('&')[0].strip()
+                p_clean = re.sub(r'[^a-z0-9]', '', p_core.lower())
+                if p_clean and (p_clean in clean_target_q or clean_target_q in p_clean):
+                    return format_place(p_core, poi["name"], poi.get("category"), poi.get("city", city_key.capitalize()), poi.get("avg_cost"), poi.get("description"))
+        raw_dest = itinerary.metadata.destination if itinerary and itinerary.metadata else ""
+        return format_place(cleaned.title(), cleaned.title(), "Landmarks", raw_dest, 0.0, f"A notable travel attraction in {raw_dest}.")
+
+    # 4. Contextual History Inspection: if query didn't name a place, check previous conversation turns
+    if history:
+        for prev in reversed(history[-6:]):
+            prev_text = prev.get("text", "") or ""
+            prev_match = find_matching_place(prev_text, itinerary, history=None)
+            if prev_match:
+                return prev_match
+
+    # 5. Contextual Pronoun Fallback: if user asked using 'it', 'this', 'that', 'here', 'this place'
+    if itinerary and itinerary.days and itinerary.days[0].stops:
+        first_stop = itinerary.days[0].stops[0]
+        raw_act = first_stop.activity
+        core_act = raw_act.split('(')[0].split('&')[0].strip()
+        raw_dest = itinerary.metadata.destination if itinerary.metadata else ""
+        return format_place(core_act, raw_act, first_stop.category, raw_dest, first_stop.estimated_cost, first_stop.notes, first_stop)
 
     return None
 
-def chat_agent(itinerary: Itinerary, question: str) -> Tuple[str, Optional[Itinerary], Optional[str]]:
+def chat_agent(
+    itinerary: Itinerary, 
+    question: str, 
+    history: Optional[List[Dict[str, Any]]] = None
+) -> Tuple[str, Optional[Itinerary], Optional[str]]:
     """
-    Answers natural-language questions grounded in the itinerary state in INR (₹).
-    Strictly filters out non-travel questions and replies with 'Irrelevant question.'.
+    Real AI Trip Copilot chatbot grounded in itinerary state, full conversation history,
+    verified pricing in INR (₹), and direct Google Search and Maps links.
     """
     lower_q = question.lower().strip()
-    members = itinerary.metadata.members_count
+    members = itinerary.metadata.members_count if itinerary and itinerary.metadata else 1
+    dest = (itinerary.metadata.destination if itinerary and itinerary.metadata else "your destination").split(" to ")[-1].strip()
 
-    # 1. Strictly enforce travel-only domain filter
-    if not is_travel_related(question, itinerary):
-        return "Irrelevant question.", None, None
+    # 1. Handle polite greetings
+    if lower_q in ["hi", "hello", "hey", "who are you", "what can you do", "help", "good morning", "good evening"]:
+        return f"Hello! I am your TravelPilot AI Trip Copilot. How can I help you with your journey to {dest}?", None, None
 
-    # Handle greetings politely
-    if lower_q in ["hi", "hello", "hey", "who are you", "what can you do", "help"]:
-        dest = itinerary.metadata.destination if itinerary and itinerary.metadata else "your destination"
-        return f"Hello! I am your Trip Copilot. How can I help you with your trip to {dest}?", None, None
+    # 2. Polite non-travel filter (coding, math formulas, elections, crypto) - NEVER say harsh "Irrelevant question."
+    for pattern in NON_TRAVEL_PATTERNS:
+        if re.search(pattern, lower_q):
+            return (
+                f"I am your TravelPilot AI Trip Copilot, specialized in helping you navigate your journey to {dest}! "
+                f"I can't assist with general coding or politics, but feel free to ask me anything about your attractions, schedules, directions, tickets, or local food!",
+                None,
+                None
+            )
 
-    # Special / Famous / Why Visit / Landmark details
+    # 3. Direct Link / Website / Map / Photos & Reviews / Directions / Redirection
     if any(k in lower_q for k in [
-        "special", "famous", "unique", "wonder", "highlight", "why visit", "why should", 
-        "what is so good", "worth visiting", "tell me about", "history of", "importance of", 
-        "significance of", "story of", "what is it", "describe", "about taj", "about agra",
-        "about", "features"
-    ]):
-        import urllib.parse
-        from poi_db import SAMPLE_POIS
-
-        matched_place = find_matching_place(question, itinerary)
+        "redirect", "link", "website", "url", "open", "google", "photos", 
+        "reviews", "maps", "map", "direction", "directions", "location"
+    ]) or re.search(r'\b(send|give|provide|show)\b.*\b(link|website|url|photos|map)\b', lower_q):
+        matched_place = find_matching_place(question, itinerary, history)
         if matched_place:
             p_name = matched_place["name"]
-            p_city = matched_place["city"] or (itinerary.metadata.destination if itinerary.metadata else "")
+            p_city = matched_place["city"] or dest
             p_cost = matched_place["cost"]
-            cost_str = f"Verified entry ticket is ₹{p_cost:,.0f}/person." if p_cost > 0 else "Entry is free (no ticket required)."
+            cost_str = f"Ticket: ₹{p_cost:,.0f}/person" if p_cost > 0 else "Free Entry"
             query_str = f"{p_name} {p_city}".strip()
             search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query_str)}"
             maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(query_str)}"
-
-            desc = matched_place.get("description") or matched_place.get("notes") or ""
-            if not desc:
-                for city_k, plist in SAMPLE_POIS.items():
-                    for p in plist:
-                        p_core = p["name"].split('(')[0].strip()
-                        if re.sub(r'[^a-z0-9]', '', p_core.lower()) == re.sub(r'[^a-z0-9]', '', p_name.lower()):
-                            desc = p.get("description", "")
-                            break
-                    if desc:
-                        break
-            if not desc:
-                desc = f"a celebrated {matched_place.get('category', 'historic attraction')} offering remarkable architecture and rich cultural heritage."
-
-            # If Gemini is available, generate dynamic response grounded in this landmark
-            gemini_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
-            if gemini_key and gemini_key.strip() and gemini_key != "your_gemini_api_key_here":
-                sys_inst = (
-                    "You are TravelPilot's AI Trip Copilot.\n"
-                    f"Explain clearly what makes {p_name} in {p_city} special and its historical/architectural significance in 2 simple, engaging sentences.\n"
-                    f"Mention the verified cost ({cost_str}) and provide markdown links:\n"
-                    f"• [{p_name} on Google Search & Photos]({search_url})\n"
-                    f"• [{p_name} on Google Maps]({maps_url})\n"
-                    "Do NOT say 'Irrelevant question.'. Keep the answer crisp and friendly."
-                )
-                user_msg = f"User asked: '{question}'. Explain why {p_name} is special. Context: {desc}"
-                gemini_ans = call_gemini(user_msg, sys_inst)
-                if gemini_ans and "irrelevant question" not in gemini_ans.lower():
-                    return gemini_ans, None, None
-
-            # Fallback deterministic response
-            lead = f"**{p_name}** ({p_city}) is world-famous as {desc.lower() if not desc.startswith('A') else desc}"
-            if not lead.endswith('.'):
-                lead += '.'
             reply = (
-                f"{lead} {cost_str}\n\n"
+                f"Here are the direct links for **{p_name}** ({cost_str}):\n\n"
                 f"• [{p_name} on Google Search & Photos]({search_url})\n"
-                f"• [{p_name} on Google Maps]({maps_url})"
-            )
-            return reply, None, None
-
-    # Redirect / Link / Photos & Reviews / More Info request
-    if any(k in lower_q for k in ["redirect", "link", "website", "more info", "information", "details on", "photos of", "reviews of", "open ", "google "]):
-        import urllib.parse
-        matched_place = find_matching_place(question, itinerary)
-        dest = itinerary.metadata.destination if itinerary and itinerary.metadata else ""
-
-        if matched_place:
-            place_name = matched_place["name"]
-            city_name = matched_place["city"] or dest
-            query_str = f"{place_name} {city_name}".strip()
-            search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query_str)}"
-            maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(query_str)}"
-            cost_str = f"Ticket: ₹{matched_place['cost']:,.0f}/person" if matched_place['cost'] > 0 else "Free Entry"
-            reply = (
-                f"Here are the direct links for **{place_name}** ({cost_str}):\n\n"
-                f"• [{place_name} on Google Search & Photos]({search_url})\n"
-                f"• [{place_name} on Google Maps]({maps_url})\n\n"
-                f"Click either link to view live traveler reviews, photos, and visiting hours."
+                f"• [{p_name} on Google Maps Directions]({maps_url})\n\n"
+                f"Click either link to explore visitor reviews, photos, and live visiting hours."
             )
             return reply, None, None
         else:
-            # Check if user mentioned another landmark or destination
-            cleaned_target = question
-            for rem in ["redirect", "me", "to", "the", "please", "can", "you", "link", "for", "open", "show", "give"]:
-                cleaned_target = re.sub(rf'\b{rem}\b', '', cleaned_target, flags=re.IGNORECASE)
-            target = cleaned_target.strip(" ?.!:,") or dest
-            query_str = f"{target} {dest}".strip()
+            query_str = f"{dest}".strip()
             search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query_str)}"
             maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(query_str)}"
             reply = (
-                f"Here are the direct links for **{target}**:\n\n"
-                f"• [{target} on Google Search & Photos]({search_url})\n"
-                f"• [{target} on Google Maps]({maps_url})\n\n"
-                f"Click either link to view live traveler reviews, photos, and visiting hours."
+                f"Here are the direct links for **{dest}**:\n\n"
+                f"• [{dest} on Google Search & Photos]({search_url})\n"
+                f"• [{dest} on Google Maps Directions]({maps_url})\n\n"
+                f"Click either link to explore traveler reviews, photos, and guide information."
             )
             return reply, None, None
 
-    # 2. Rescheduling / Delay questions
+    # 4. Rescheduling / Delay questions
     if any(k in lower_q for k in ["delayed", "delay", "late", "traffic", "push everything", "push after"]):
-        import re
-        delay_min = 180  # Default 3 hours (180 mins)
+        delay_min = 180
         m = re.search(r'(\d+)\s*(?:hour|hr)', lower_q)
         if m:
             delay_min = int(m.group(1)) * 60
@@ -757,7 +728,7 @@ def chat_agent(itinerary: Itinerary, question: str) -> Tuple[str, Optional[Itine
         reply = f"Your schedule has been adjusted for the delay. Your next activity starts at {new_start}."
         return reply, res["updated_itinerary"], "resequenced_delay"
 
-    # 3. Cancellation questions
+    # 5. Cancellation questions
     if any(word in lower_q for word in ["cancel", "remove", "drop", "skip", "delete"]):
         for day in itinerary.days:
             for stop in day.stops:
@@ -768,7 +739,7 @@ def chat_agent(itinerary: Itinerary, question: str) -> Tuple[str, Optional[Itine
                     reply = f"'{stop.activity}' has been removed from your schedule."
                     return reply, updated_itin, "cancelled_stop"
 
-    # 4. Tomorrow morning / Tomorrow activities
+    # 6. Tomorrow morning / Tomorrow activities
     if "tomorrow morning" in lower_q:
         target_day = itinerary.days[1] if len(itinerary.days) > 1 else itinerary.days[0]
         morning_stops = [s for s in target_day.stops if s.status != "cancelled" and ("09:" in s.time_slot.start or "10:" in s.time_slot.start or "08:" in s.time_slot.start)]
@@ -787,104 +758,88 @@ def chat_agent(itinerary: Itinerary, question: str) -> Tuple[str, Optional[Itine
             return f"Tomorrow you will visit: {', '.join(stops)}.", None, None
         return "No activities are scheduled for tomorrow.", None, None
 
-    # 5. Transportation / Travel Mode
+    # 7. Transportation / Travel Mode
     if any(w in lower_q for w in ["transit", "travel mode", "flight", "road", "train", "cab", "transport", "how are we going", "how to reach"]):
         t = itinerary.metadata.transportation
         if t:
             return f"You are travelling by {t.mode} via **{t.route_name}** ({t.carrier_info}).", None, None
 
-    # 6. Budget & Cost
+    # 8. Budget & Cost
     if any(w in lower_q for w in ["budget", "total budget", "cost", "total cost", "price", "how much"]):
         if "budget" in lower_q and "cost" not in lower_q:
             return f"Your allocated trip budget is ₹{itinerary.metadata.budget:,.0f}.", None, None
         return f"The estimated total trip cost is ₹{itinerary.trip_totals.estimated_total_cost:,.0f} for {members} member(s).", None, None
 
-    # 7. Local Food & Dining
-    if any(w in lower_q for w in ["food", "eat", "restaurant", "cafe", "cuisine", "dish", "breakfast", "lunch", "dinner", "street food"]):
-        dest = itinerary.metadata.destination.lower()
-        if "agra" in dest:
-            return "In Agra, you should try famous Agra Petha at Panchhi Petha, Bedai with Jalebi, and Mughlai dishes at Pinch of Spice.", None, None
-        elif "jaipur" in dest:
-            return "In Jaipur, try Pyaz Kachori at Rawat Mishtan Bhandar, Dal Baati Churma, and fresh lassi on MI Road.", None, None
-        elif "delhi" in dest:
-            return "In Delhi, try Chole Bhature in Chandni Chowk, Butter Chicken at Pandara Road, and parathas in Old Delhi.", None, None
-        elif "goa" in dest:
-            return "In Goa, try authentic Goan Fish Curry, Prawn Balchão, and fresh beach shack seafood.", None, None
-        else:
-            return f"In {itinerary.metadata.destination}, explore popular local restaurants and food streets near the city center.", None, None
-
-    # 8. Sightseeing / Places to visit
-    if any(w in lower_q for w in ["places", "sightseeing", "monument", "attraction", "what to see", "spots"]):
-        all_stops = [s.activity for d in itinerary.days for s in d.stops if s.status != "cancelled"]
-        unique_stops = list(dict.fromkeys(all_stops))
-        return f"Your trip includes visits to: {', '.join(unique_stops[:4])}.", None, None
-
-    # 9. Weather & Packing
-    if any(w in lower_q for w in ["weather", "climate", "pack", "packing", "clothes", "wear", "temperature", "rain"]):
-        return f"For {itinerary.metadata.destination}, wear comfortable walking shoes and light cotton clothes.", None, None
-
-    # 10. Proximity / Nearby spots
-    if "close" in lower_q or "near" in lower_q:
-        day1 = itinerary.days[0] if itinerary.days else None
-        if day1 and len(day1.stops) >= 2:
-            return f"**{day1.stops[0].activity}** and **{day1.stops[1].activity}** are located close to each other on Day 1.", None, None
-        return f"Activities are grouped geographically each day to minimize travel time.", None, None
-
-    # 11. Google Gemini AI Chat if available
+    # 9. Real AI Chatbot via Gemini (with full history and trip context)
     gemini_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
     if gemini_key and gemini_key.strip() and gemini_key != "your_gemini_api_key_here":
         all_stops_str = ", ".join([s.activity.split("(")[0].strip() for d in itinerary.days for s in d.stops if s.status != "cancelled"][:8])
+        history_str = ""
+        if history:
+            for h in history[-6:]:
+                role_label = "User" if h.get("role") == "user" else "Assistant"
+                history_str += f"{role_label}: {h.get('text', '')}\n"
+
+        matched_p = find_matching_place(question, itinerary, history)
+        place_hint = ""
+        if matched_p:
+            p_name = matched_p["name"]
+            p_city = matched_p["city"] or dest
+            q_str = f"{p_name} {p_city}".strip()
+            s_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(q_str)}"
+            m_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(q_str)}"
+            place_hint = (
+                f"\nContext on place being discussed: {p_name} ({p_city}).\n"
+                f"Description: {matched_p.get('description', '')}\n"
+                f"Verified ticket: ₹{matched_p.get('cost', 0):,.0f}/person\n"
+                f"Links: [Google Search & Photos]({s_url}), [Google Maps Directions]({m_url})\n"
+            )
+
         sys_inst = (
-            "You are TravelPilot's AI Trip Copilot.\n"
+            "You are TravelPilot's AI Trip Copilot — a real, intelligent, and friendly travel assistant.\n"
             "RULES:\n"
-            "1. Answer travel-related questions about the itinerary, destination, attractions, transport, food, timings, costs, and culture.\n"
-            "2. Questions about places, sights, 'what makes it special', 'why is it famous', 'tell me about it' are ALWAYS valid travel questions. Answer concisely (1-2 clear, simple sentences).\n"
-            "3. If the user asks for links, redirect, photos, or reviews, provide a markdown link: [Place Name on Google](https://www.google.com/search?q=...).\n"
-            "4. Only reply 'Irrelevant question.' if the user asks something completely outside of travel (such as writing software code, math equations, politics/elections, cryptocurrency, or video games).\n"
-            "5. Keep language simple, clear, friendly, and factual."
+            f"1. You are actively assisting with the user's trip to {dest}.\n"
+            "2. When the user asks about attractions, timings, 'what makes it special', 'tell me more', or asks for links, provide insightful, practical details.\n"
+            "3. Whenever referring to a specific landmark, you can provide markdown links:\n"
+            "   • [Place Name on Google Search & Photos](https://www.google.com/search?q=...)\n"
+            "   • [Place Name on Google Maps Directions](https://www.google.com/maps/search/?api=1&query=...)\n"
+            "4. NEVER say 'Irrelevant question.'. Always be helpful, engaging, and clear (2-4 concise sentences).\n"
+            "5. If asked something completely outside travel (like writing code), politely say you specialize in their trip."
         )
+
         user_prompt = (
-            f"Trip Destination: {itinerary.metadata.destination}\n"
-            f"Scheduled Attractions: {all_stops_str}\n"
-            f"Dates: {itinerary.metadata.start_date} to {itinerary.metadata.end_date}\n"
-            f"Members: {members}\n"
+            f"Destination: {dest}\n"
+            f"Dates: {itinerary.metadata.start_date} to {itinerary.metadata.end_date} ({members} members)\n"
+            f"Scheduled Stops: {all_stops_str}\n"
+            f"{place_hint}\n"
+            f"Conversation History:\n{history_str}\n"
             f"User Question: {question}"
         )
+
         gemini_reply = call_gemini(user_prompt, sys_inst)
-        if gemini_reply:
-            if "irrelevant question" in gemini_reply.lower():
-                return "Irrelevant question.", None, None
+        if gemini_reply and "irrelevant question" not in gemini_reply.lower():
             return gemini_reply, None, None
 
-    # 12. Claude Chat if API key available
-    if ANTHROPIC_API_KEY:
-        try:
-            import anthropic
-            all_stops_str = ", ".join([s.activity.split("(")[0].strip() for d in itinerary.days for s in d.stops if s.status != "cancelled"][:8])
-            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-            resp = client.messages.create(
-                model=CLAUDE_MODEL,
-                max_tokens=250,
-                system=(
-                    "You are TravelPilot's AI Trip Copilot. "
-                    "Rules: 1. Answer travel questions. Questions about places, why they are special or famous are always valid travel questions. "
-                    "2. Only reply 'Irrelevant question.' for genuine non-travel questions like coding, math, or politics. "
-                    "3. Make language simple and readable. 4. Only answer the exact question asked in 1-2 simple sentences."
-                ),
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Trip Destination: {itinerary.metadata.destination}, Scheduled Attractions: {all_stops_str}, Question: {question}"
-                    }
-                ]
-            )
-            claude_reply = resp.content[0].text
-            if "irrelevant question" in claude_reply.lower():
-                return "Irrelevant question.", None, None
-            return claude_reply, None, None
-        except Exception as e:
-            logger.warning(f"Claude chat error: {e}")
+    # 10. Fallback for place inquiries if Gemini unavailable
+    matched_place = find_matching_place(question, itinerary, history)
+    if matched_place:
+        p_name = matched_place["name"]
+        p_city = matched_place["city"] or dest
+        p_cost = matched_place["cost"]
+        cost_str = f"Verified entry ticket is ₹{p_cost:,.0f}/person." if p_cost > 0 else "Entry is free (no ticket required)."
+        query_str = f"{p_name} {p_city}".strip()
+        search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query_str)}"
+        maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(query_str)}"
+        desc = matched_place.get("description") or matched_place.get("notes") or f"a celebrated historic attraction in {p_city}."
+        lead = f"**{p_name}** ({p_city}) is world-famous as {desc.lower() if not desc.startswith('A') else desc}"
+        if not lead.endswith('.'):
+            lead += '.'
+        reply = (
+            f"{lead} {cost_str}\n\n"
+            f"• [{p_name} on Google Search & Photos]({search_url})\n"
+            f"• [{p_name} on Google Maps Directions]({maps_url})"
+        )
+        return reply, None, None
 
-    # Fallback: Simple, direct 1 sentence
-    dest = itinerary.metadata.destination
-    return f"Your trip to {dest} includes {itinerary.trip_totals.total_activities} scheduled stops from {itinerary.metadata.start_date} to {itinerary.metadata.end_date}.", None, None
+    # Fallback: Simple, direct sentence
+    return f"Your trip to {dest} includes {itinerary.trip_totals.total_activities} scheduled stops from {itinerary.metadata.start_date} to {itinerary.metadata.end_date}. Feel free to ask about attractions, timings, tickets, or food!", None, None
