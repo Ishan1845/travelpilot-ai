@@ -543,6 +543,110 @@ def is_travel_related(question: str, itinerary: Optional[Itinerary] = None) -> b
 
     return False
 
+CITY_KNOWLEDGE: Dict[str, Dict[str, str]] = {
+    "delhi": {
+        "famous_for": (
+            "Delhi, India's historic capital, is world-famous for its UNESCO World Heritage monuments "
+            "(Red Fort, Qutub Minar, Humayun's Tomb), architectural icons like India Gate, Lotus Temple, and Swaminarayan Akshardham, "
+            "historic cultural hubs like Chandni Chowk and Gurudwara Bangla Sahib, and celebrated street food."
+        ),
+        "food": "Chandni Chowk Paranthas, Natraj Dahi Bhalla, Chole Bhature, spicy Chaat, Butter Chicken, and street Kebabs.",
+        "best_time": "October to March when temperatures are pleasant for outdoor sightseeing.",
+        "shopping": "Dilli Haat for authentic state handicrafts, Janpath, Sarojini Nagar, and the historic spice market of Khari Baoli."
+    },
+    "varanasi": {
+        "famous_for": (
+            "Varanasi (Kashi), on the sacred banks of the Ganges, is one of the world's oldest continually inhabited cities. "
+            "It is world-famous for its 84 sacred Ghats (Dashashwamedh, Assi, Manikarnika), the spiritual evening Ganga Aarti, "
+            "the revered Kashi Vishwanath Temple, nearby Sarnath (where Lord Buddha delivered his first sermon), and Banarasi silk weaving."
+        ),
+        "food": "Banarasi Paan, Malaiyo (winter milk froth delight), Tamatar Chaat, Kachori Jalebi, and rich creamy Lassi.",
+        "best_time": "October to March for cool weather, ideal for morning sunrise boat rides on the Ganges.",
+        "shopping": "Handwoven Banarasi silk sarees, brass puja artifacts, and wooden toys in the old city alleys."
+    },
+    "agra": {
+        "famous_for": (
+            "Agra is globally renowned for the ivory-white marble Taj Mahal (UNESCO World Wonder), "
+            "the majestic red sandstone Agra Fort, the Mughal gardens of Mehtab Bagh, and the historic imperial ghost city of Fatehpur Sikri."
+        ),
+        "food": "Authentic Agra Petha (in classic, anguri, and paan flavors), Mughlai curries, and spicy Bedmi Puri with Aloo sabzi.",
+        "best_time": "October to March when the winter mist clears to reveal breathtaking views of the Taj Mahal.",
+        "shopping": "Pietra Dura marble inlay handicrafts, leather shoes and bags, and traditional carpets."
+    },
+    "jaipur": {
+        "famous_for": (
+            "Jaipur, Rajasthan's 'Pink City', is famous for royal hilltop forts and ornate palaces including Amer Fort, "
+            "Hawa Mahal (Palace of Winds), City Palace, Jal Mahal, and the UNESCO-listed Jantar Mantar astronomical observatory."
+        ),
+        "food": "Traditional Dal Baati Churma, Ghewar sweet, Pyaz Kachori, and authentic Rajasthani Thali.",
+        "best_time": "November to February for pleasant weather suited for fort exploring.",
+        "shopping": "Johari Bazaar for gemstones and jewelry, Bapu Bazaar for textiles, blue pottery, and Mojari footwear."
+    },
+    "goa": {
+        "famous_for": (
+            "Goa is world-famous for its golden sandy beaches (Baga, Calangute, Anjuna, Palolem), Portuguese colonial architecture "
+            "(Basilica of Bom Jesus, Se Cathedral), vibrant nightlife, coastal watersports, and colorful Fontainhas Latin Quarter."
+        ),
+        "food": "Goan fish curry with rice, Bebinca cake, Prawn Balchão, and fresh coastal seafood.",
+        "best_time": "November to February for ideal beach weather and festive vibes.",
+        "shopping": "Anjuna Flea Market, Saturday Night Market, cashew nuts, and feni."
+    },
+    "kerala": {
+        "famous_for": (
+            "Kerala ('God's Own Country') is renowned for its tranquil backwaters and houseboat cruises in Alleppey, "
+            "tea plantations in misty Munnar, Ayurvedic wellness therapies, and classical Kathakali dance."
+        ),
+        "food": "Kerala Sadya on banana leaf, Appam with vegetable stew, Malabar Parotta, and Karimeen Pollichathu.",
+        "best_time": "September to March for pleasant temperatures and tranquil backwater cruises.",
+        "shopping": "Fresh spices (cardamom, pepper, cinnamon), Munnar tea leaves, and coir handicrafts."
+    },
+    "vadodara": {
+        "famous_for": (
+            "Vadodara is Gujarat's cultural capital, celebrated for the magnificent Laxmi Vilas Palace (4 times the size of Buckingham Palace), "
+            "Sayaji Baug, Baroda Museum, and serving as the primary hub to visit the Statue of Unity in Kevadia."
+        ),
+        "food": "Sev Usal, authentic Gujarati Thali, Khaman Dhokla, and Bhakarwadi.",
+        "best_time": "October to March, especially during the 9 nights of Navratri Garba celebrations.",
+        "shopping": "Bandhani dupattas, embroidered Chaniya Cholis, and traditional Gujarati snacks."
+    },
+    "kevadia": {
+        "famous_for": (
+            "Kevadia (Ekta Nagar) is world-famous for the Statue of Unity — the world's tallest statue (182m) honoring Sardar Vallabhbhai Patel, "
+            "the Sardar Sarovar Dam, Valley of Flowers, Jungle Safari, and the evening projection laser show."
+        ),
+        "food": "Ekta Food Court multi-cuisine delicacies, Gujarati farsan, and regional Narmada valley foods.",
+        "best_time": "October to March for comfortable outdoor temperatures around the monument.",
+        "shopping": "Tribal handicrafts, souvenirs, and miniature Statue of Unity models at Ekta Mall."
+    },
+    "mumbai": {
+        "famous_for": (
+            "Mumbai is famous for the Gateway of India, Marine Drive (Queen's Necklace), "
+            "Chhatrapati Shivaji Maharaj Terminus (UNESCO), Elephanta Caves, Bollywood film industry, and vibrant nightlife."
+        ),
+        "food": "Iconic Vada Pav, Pav Bhaji at Juhu Beach, Bombay Duck, Bun Maska at Irani cafes, and Sev Puri.",
+        "best_time": "November to February for pleasant coastal breezes.",
+        "shopping": "Colaba Causeway, Linking Road, and Chor Bazaar for vintage finds."
+    },
+    "paris": {
+        "famous_for": (
+            "Paris is famous for the Eiffel Tower, Louvre Museum (Mona Lisa), Notre-Dame Cathedral, "
+            "Champs-Élysées, Arc de Triomphe, Montmartre, and world-class culinary excellence."
+        ),
+        "food": "Fresh croissants, macarons, French crêpes, cheese boards, and classic baguettes.",
+        "best_time": "April to June or September to October for great weather and sightseeing.",
+        "shopping": "Galeries Lafayette, luxury boutiques along Champs-Élysées, and vintage flea markets."
+    },
+    "tokyo": {
+        "famous_for": (
+            "Tokyo is world-famous for blending futuristic neon skyscrapers with historic shrines (Senso-ji, Meiji Jingu), "
+            "vibrant districts like Shibuya Crossing and Akihabara, and unmatched cuisine."
+        ),
+        "food": "Authentic ramen, Tsukiji sushi, yakitori, matcha desserts, and tempura.",
+        "best_time": "March to May (cherry blossoms) or October to November (autumn foliage).",
+        "shopping": "Ginza for high-end fashion, Akihabara for electronics, and Shibuya 109."
+    }
+}
+
 def find_matching_place(
     query: str, 
     itinerary: Optional[Itinerary] = None, 
@@ -621,8 +725,6 @@ def find_matching_place(
                 p_clean = re.sub(r'[^a-z0-9]', '', p_core.lower())
                 if p_clean and (p_clean in clean_target_q or clean_target_q in p_clean):
                     return format_place(p_core, poi["name"], poi.get("category"), poi.get("city", city_key.capitalize()), poi.get("avg_cost"), poi.get("description"))
-        raw_dest = itinerary.metadata.destination if itinerary and itinerary.metadata else ""
-        return format_place(cleaned.title(), cleaned.title(), "Landmarks", raw_dest, 0.0, f"A notable travel attraction in {raw_dest}.")
 
     # 4. Contextual History Inspection: if query didn't name a place, check previous conversation turns
     if history:
@@ -632,13 +734,18 @@ def find_matching_place(
             if prev_match:
                 return prev_match
 
-    # 5. Contextual Pronoun Fallback: if user asked using 'it', 'this', 'that', 'here', 'this place'
-    if itinerary and itinerary.days and itinerary.days[0].stops:
-        first_stop = itinerary.days[0].stops[0]
-        raw_act = first_stop.activity
-        core_act = raw_act.split('(')[0].split('&')[0].strip()
-        raw_dest = itinerary.metadata.destination if itinerary.metadata else ""
-        return format_place(core_act, raw_act, first_stop.category, raw_dest, first_stop.estimated_cost, first_stop.notes, first_stop)
+    # 5. Contextual Pronoun Fallback: ONLY if user asked using 'it', 'this', 'that', 'here', 'this place', 'the place', 'tell me more'
+    has_pronoun_reference = bool(
+        re.search(r'\b(it|this|that|here|this place|that place|the place|spot)\b', lower_q) or
+        any(p in lower_q for p in ["tell me more", "more details", "more info", "about it", "about this"])
+    )
+    if has_pronoun_reference:
+        if itinerary and itinerary.days and itinerary.days[0].stops:
+            first_stop = itinerary.days[0].stops[0]
+            raw_act = first_stop.activity
+            core_act = raw_act.split('(')[0].split('&')[0].strip()
+            raw_dest = itinerary.metadata.destination if itinerary.metadata else ""
+            return format_place(core_act, raw_act, first_stop.category, raw_dest, first_stop.estimated_cost, first_stop.notes, first_stop)
 
     return None
 
@@ -669,11 +776,13 @@ def chat_agent(
                 None
             )
 
-    # 3. Direct Link / Website / Map / Photos & Reviews / Directions / Redirection
-    if any(k in lower_q for k in [
-        "redirect", "link", "website", "url", "open", "google", "photos", 
-        "reviews", "maps", "map", "direction", "directions", "location"
-    ]) or re.search(r'\b(send|give|provide|show)\b.*\b(link|website|url|photos|map)\b', lower_q):
+    # 3. Explicit Link / Website / Map / Redirection Request (Only when user explicitly asks for URL/link/redirect)
+    is_link_request = bool(
+        re.search(r'\b(redirect|take me to|open (the )?(page|site|google|map))\b', lower_q) or
+        re.search(r'\b(link|url|website|web link|maps link|google link)\b', lower_q) or
+        re.search(r'\b(send|give|provide|show|share)\b.*\b(link|url|website|maps|google)\b', lower_q)
+    )
+    if is_link_request:
         matched_place = find_matching_place(question, itinerary, history)
         if matched_place:
             p_name = matched_place["name"]
@@ -691,13 +800,17 @@ def chat_agent(
             )
             return reply, None, None
         else:
-            query_str = f"{dest}".strip()
+            # Check if user asked to redirect to a specific place not in database
+            cand_name = re.sub(r'\b(send|give|provide|show|share|can you|could you|please|me|link|url|website|of|for|the|redirect|to|open)\b', ' ', lower_q).strip()
+            target_name = cand_name.title() if cand_name and len(cand_name) >= 3 else dest
+            target_city = dest if target_name != dest else ""
+            query_str = f"{target_name} {target_city}".strip()
             search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query_str)}"
             maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(query_str)}"
             reply = (
-                f"Here are the direct links for **{dest}**:\n\n"
-                f"• [{dest} on Google Search & Photos]({search_url})\n"
-                f"• [{dest} on Google Maps Directions]({maps_url})\n\n"
+                f"Here are the direct links for **{target_name}**:\n\n"
+                f"• [{target_name} on Google Search & Photos]({search_url})\n"
+                f"• [{target_name} on Google Maps Directions]({maps_url})\n\n"
                 f"Click either link to explore traveler reviews, photos, and guide information."
             )
             return reply, None, None
@@ -770,7 +883,103 @@ def chat_agent(
             return f"Your allocated trip budget is ₹{itinerary.metadata.budget:,.0f}.", None, None
         return f"The estimated total trip cost is ₹{itinerary.trip_totals.estimated_total_cost:,.0f} for {members} member(s).", None, None
 
-    # 9. Real AI Chatbot via Gemini (with full history and trip context)
+    # 9. Inquiries about Specific Itinerary Stops or Landmarks
+    specific_place = find_matching_place(question, itinerary, history)
+
+    # Detect city in question or destination
+    mentioned_city = None
+    for c in ["delhi", "varanasi", "kashi", "agra", "jaipur", "goa", "kerala", "vadodara", "kevadia", "mumbai", "paris", "tokyo"]:
+        if c in lower_q:
+            mentioned_city = "varanasi" if c == "kashi" else c
+            break
+
+    dest_city = None
+    for c in ["delhi", "varanasi", "agra", "jaipur", "goa", "kerala", "vadodara", "kevadia", "mumbai", "paris", "tokyo"]:
+        if c in dest.lower():
+            dest_city = c
+            break
+
+    target_city = mentioned_city or dest_city
+
+    # Check for "what is [city] famous for" (including typos like "what id delhi famous")
+    is_city_famous_q = bool(
+        mentioned_city and (
+            re.search(r'\b(famous|famour|famus|known for|special|highlights|attraction|attractions)\b', lower_q) or
+            re.search(r'\bwhat (is|id|are)\b.*\b(famous|known|in|special)\b', lower_q) or
+            re.search(r'\bwhy (visit|go to)\b', lower_q) or
+            (len(lower_q.split()) <= 6 and any(w in lower_q for w in ["what", "why", "about", "tell me"]))
+        )
+    )
+
+    # 1. If the user is asking about the city as a whole (e.g. "what is delhi famous for", "what id delhi famous")
+    is_explicit_city_query = bool(
+        re.search(r'\b(city|state|capital)\b', lower_q) or
+        re.search(r'\bwhat (id|is|are)\b.*\b(delhi|varanasi|kashi|agra|jaipur|goa|kerala|mumbai|vadodara|kevadia|paris|tokyo)\b', lower_q) or
+        re.search(r'\b(delhi|varanasi|kashi|agra|jaipur|goa|kerala|mumbai|vadodara|kevadia|paris|tokyo)\b\s+(is\s+)?(famous|highlights)\b', lower_q) or
+        re.search(r'\bwhy (visit|go to)\s+(delhi|varanasi|kashi|agra|jaipur|goa|kerala|mumbai|vadodara|kevadia|paris|tokyo)\b', lower_q)
+    )
+
+    if (is_explicit_city_query or (is_city_famous_q and not specific_place)) and target_city in CITY_KNOWLEDGE:
+        c_info = CITY_KNOWLEDGE[target_city]
+        city_display = target_city.capitalize()
+        return (
+            f"**{city_display}** is celebrated for its remarkable heritage and attractions:\n\n"
+            f"{c_info['famous_for']}\n\n"
+            f"• **Must-try food**: {c_info['food']}\n"
+            f"• **Best time to visit**: {c_info['best_time']}"
+        ), None, None
+
+    # If a specific place was asked about (e.g. "tell me about Kashi Vishwanath", "tell me more about this place")
+    if specific_place:
+        p_name = specific_place["name"]
+        p_city = specific_place["city"] or dest
+        p_cost = specific_place["cost"]
+        cost_str = f"Verified entry ticket is ₹{p_cost:,.0f}/person." if p_cost > 0 else "Entry is free (no ticket required)."
+        desc = specific_place.get("description") or specific_place.get("notes") or f"a celebrated historic attraction in {p_city}."
+        lead = f"**{p_name}** ({p_city}) is famous as {desc.lower() if not desc.startswith('A') else desc}"
+        if not lead.endswith('.'):
+            lead += '.'
+        reply = (
+            f"{lead} {cost_str}\n\n"
+            f"Feel free to ask more about visiting timings, history, or what to see here!"
+        )
+        return reply, None, None
+
+    # If asking about city cuisine/weather/shopping without naming a specific place
+    if target_city and target_city in CITY_KNOWLEDGE:
+        c_info = CITY_KNOWLEDGE[target_city]
+        city_display = target_city.capitalize()
+
+        if any(w in lower_q for w in ["food", "eat", "dishes", "cuisine", "street food", "restaurant", "snack"]):
+            return f"When in **{city_display}**, here are the top local specialties to try:\n{c_info['food']}", None, None
+
+        if any(w in lower_q for w in ["weather", "best time", "season", "climate", "temperature", "month", "when to visit"]):
+            return f"The best time to visit **{city_display}** is {c_info['best_time']}", None, None
+
+        if any(w in lower_q for w in ["shopping", "market", "bazaar", "buy", "souvenir"]):
+            return f"Top shopping spots and markets in **{city_display}** include: {c_info['shopping']}", None, None
+
+    # Packing / Attire questions
+    if any(w in lower_q for w in ["pack", "wear", "dress", "clothes", "clothing"]):
+        return (
+            f"Recommended packing essentials for **{dest}**:\n"
+            f"• Comfortable footwear for walking tours and heritage exploration.\n"
+            f"• Modest, breathable clothing suitable for temple and cultural visits (covering shoulders and knees).\n"
+            f"• Sun protection (sunglasses, hat, sunscreen) and a light layer for air-conditioned transit or cool evenings.\n"
+            f"• Valid ID card and a reusable water bottle."
+        ), None, None
+
+    # Safety questions
+    if any(w in lower_q for w in ["safe", "safety", "precaution", "scam", "emergency"]):
+        return (
+            f"Tips for a safe and hassle-free trip to **{dest}**:\n"
+            f"• Stick to authorized ticket counters or official portals for monument tickets.\n"
+            f"• Use verified app-based cabs (Uber/Ola) or prepaid government taxi/auto booths.\n"
+            f"• Drink sealed bottled or filtered water.\n"
+            f"• Keep emergency contacts and digital copies of your IDs handy."
+        ), None, None
+
+    # 10. Real AI Chatbot via Gemini (with full history and trip context)
     gemini_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
     if gemini_key and gemini_key.strip() and gemini_key != "your_gemini_api_key_here":
         all_stops_str = ", ".join([s.activity.split("(")[0].strip() for d in itinerary.days for s in d.stops if s.status != "cancelled"][:8])
@@ -785,24 +994,18 @@ def chat_agent(
         if matched_p:
             p_name = matched_p["name"]
             p_city = matched_p["city"] or dest
-            q_str = f"{p_name} {p_city}".strip()
-            s_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(q_str)}"
-            m_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(q_str)}"
             place_hint = (
                 f"\nContext on place being discussed: {p_name} ({p_city}).\n"
                 f"Description: {matched_p.get('description', '')}\n"
                 f"Verified ticket: ₹{matched_p.get('cost', 0):,.0f}/person\n"
-                f"Links: [Google Search & Photos]({s_url}), [Google Maps Directions]({m_url})\n"
             )
 
         sys_inst = (
             "You are TravelPilot's AI Trip Copilot — a real, intelligent, and friendly travel assistant.\n"
             "RULES:\n"
             f"1. You are actively assisting with the user's trip to {dest}.\n"
-            "2. When the user asks about attractions, timings, 'what makes it special', 'tell me more', or asks for links, provide insightful, practical details.\n"
-            "3. Whenever referring to a specific landmark, you can provide markdown links:\n"
-            "   • [Place Name on Google Search & Photos](https://www.google.com/search?q=...)\n"
-            "   • [Place Name on Google Maps Directions](https://www.google.com/maps/search/?api=1&query=...)\n"
+            "2. Answer user questions directly, conversationally, and informatively in the chat.\n"
+            "3. Do NOT provide Google search or map URLs unless the user explicitly requested a link, website, URL, or redirection.\n"
             "4. NEVER say 'Irrelevant question.'. Always be helpful, engaging, and clear (2-4 concise sentences).\n"
             "5. If asked something completely outside travel (like writing code), politely say you specialize in their trip."
         )
@@ -820,26 +1023,25 @@ def chat_agent(
         if gemini_reply and "irrelevant question" not in gemini_reply.lower():
             return gemini_reply, None, None
 
-    # 10. Fallback for place inquiries if Gemini unavailable
+    # 11. Grounded Inquiries about Itinerary Stops and Attractions (Answered directly in chat without external redirect)
     matched_place = find_matching_place(question, itinerary, history)
     if matched_place:
         p_name = matched_place["name"]
         p_city = matched_place["city"] or dest
         p_cost = matched_place["cost"]
         cost_str = f"Verified entry ticket is ₹{p_cost:,.0f}/person." if p_cost > 0 else "Entry is free (no ticket required)."
-        query_str = f"{p_name} {p_city}".strip()
-        search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(query_str)}"
-        maps_url = f"https://www.google.com/maps/search/?api=1&query={urllib.parse.quote_plus(query_str)}"
         desc = matched_place.get("description") or matched_place.get("notes") or f"a celebrated historic attraction in {p_city}."
-        lead = f"**{p_name}** ({p_city}) is world-famous as {desc.lower() if not desc.startswith('A') else desc}"
+        lead = f"**{p_name}** ({p_city}) is famous as {desc.lower() if not desc.startswith('A') else desc}"
         if not lead.endswith('.'):
             lead += '.'
         reply = (
             f"{lead} {cost_str}\n\n"
-            f"• [{p_name} on Google Search & Photos]({search_url})\n"
-            f"• [{p_name} on Google Maps Directions]({maps_url})"
+            f"Feel free to ask more about visiting timings, history, or what to see here!"
         )
         return reply, None, None
 
-    # Fallback: Simple, direct sentence
-    return f"Your trip to {dest} includes {itinerary.trip_totals.total_activities} scheduled stops from {itinerary.metadata.start_date} to {itinerary.metadata.end_date}. Feel free to ask about attractions, timings, tickets, or food!", None, None
+    # 12. Fallback: Friendly, direct conversational response
+    return (
+        f"Your trip to **{dest}** includes {itinerary.trip_totals.total_activities} scheduled stops from {itinerary.metadata.start_date} to {itinerary.metadata.end_date}. "
+        f"I can help you with attraction details, local food, culture, timings, or schedule changes right here in the chat!"
+    ), None, None
