@@ -76,10 +76,10 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Starting Location (Origin / From) */}
+          {/* FROM */}
           <div className="space-y-1.5">
             <PlaceSearchInput
-              label="Starting Location (From Where We Are Going)"
+              label="FROM"
               value={origin}
               onChange={setOrigin}
               placeholder="Enter starting city (e.g. Vadodara, Delhi, Mumbai...)"
@@ -89,10 +89,10 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
             />
           </div>
 
-          {/* Destined Location (To) */}
+          {/* TO */}
           <div className="space-y-1.5">
             <PlaceSearchInput
-              label="Destined Location (Where We Are Going)"
+              label="TO"
               value={destination}
               onChange={setDestination}
               placeholder="Enter destination city (e.g. Agra, Jaipur, Varanasi, Goa...)"

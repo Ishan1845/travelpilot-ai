@@ -178,8 +178,8 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
   
   // Interactive Booking Preview State
   const [bookingMode, setBookingMode] = useState("road"); // 'flight' | 'train' | 'road'
-  const [bookingOrigin, setBookingOrigin] = useState("Delhi NCR");
-  const [bookingDest, setBookingDest] = useState("Agra");
+  const [bookingOrigin, setBookingOrigin] = useState("");
+  const [bookingDest, setBookingDest] = useState("");
   const [bookingMembers, setBookingMembers] = useState(2);
   const [bookingDate, setBookingDate] = useState(() => {
     const d = new Date();
@@ -205,8 +205,14 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
     : FAMOUS_DESTINATIONS.filter(d => d.category.toLowerCase() === selectedCategory.toLowerCase());
 
   const handleHeroQuickGenerate = () => {
+    const dest = bookingDest ? bookingDest.trim() : "";
+    const orig = bookingOrigin ? bookingOrigin.trim() : "";
+    if (!dest) {
+      if (onStartPlanner) onStartPlanner();
+      return;
+    }
     if (onSelectDestination) {
-      onSelectDestination(bookingDest, `${bookingDest} Experience`, bookingOrigin, bookingMembers);
+      onSelectDestination(dest, `${dest} Experience`, orig || "Delhi", bookingMembers);
     } else if (onStartPlanner) {
       onStartPlanner();
     }
@@ -252,7 +258,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-left">
               {/* 1. From (Starting Location) with Same-Name Places Autocomplete */}
               <PlaceSearchInput
-                label="From"
+                label="FROM"
                 value={bookingOrigin}
                 onChange={setBookingOrigin}
                 placeholder="Starting city (e.g. Delhi...)"
@@ -264,7 +270,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
 
               {/* 2. To (Destined Location) with Same-Name Places Autocomplete */}
               <PlaceSearchInput
-                label="To"
+                label="TO"
                 value={bookingDest}
                 onChange={setBookingDest}
                 placeholder="Destination city (e.g. Agra...)"
@@ -530,7 +536,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
               <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-slate-950/80 border border-slate-800/80">
                 <div>
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">From (Origin)</span>
-                  <span className="text-base sm:text-lg font-black text-white">{bookingOrigin}</span>
+                  <span className="text-base sm:text-lg font-black text-white">{bookingOrigin || "—"}</span>
                   <span className="text-[11px] text-slate-400 block mt-0.5">Terminal / Station Gate A</span>
                 </div>
 
@@ -546,7 +552,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
 
                 <div className="text-right">
                   <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">To (Destination)</span>
-                  <span className="text-base sm:text-lg font-black text-white">{bookingDest}</span>
+                  <span className="text-base sm:text-lg font-black text-white">{bookingDest || "—"}</span>
                   <span className="text-[11px] text-slate-400 block mt-0.5">City Gateway Junction</span>
                 </div>
               </div>
