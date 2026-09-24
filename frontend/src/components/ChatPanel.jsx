@@ -198,7 +198,7 @@ export default function ChatPanel({ itinerary, onSendMessage, messages, isLoadin
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask TravelPilot about your trip..."
+          placeholder="Ask TripSaathi about your trip..."
           disabled={isLoading}
           className="w-full pr-12 pl-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all"
         />

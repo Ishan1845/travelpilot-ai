@@ -199,7 +199,7 @@ export default function App() {
       setActivePage('planner');
     } catch (err) {
       console.error("Generate error:", err);
-      setApiError("Could not connect to TravelPilot backend on http://localhost:8000 or http://127.0.0.1:8000. Please ensure the backend is running.");
+      setApiError("Could not connect to TripSaathi backend on http://localhost:8000 or http://127.0.0.1:8000. Please ensure the backend is running.");
     } finally {
       setIsLoading(false);
     }

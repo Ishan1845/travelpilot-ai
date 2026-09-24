@@ -148,7 +148,7 @@ const TESTIMONIALS = [
     avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
     rating: 5,
     verified: true,
-    review: "When our highway stretch had a monsoon diversion, TravelPilot's live disruption engine kicked in immediately and gave us an alternate scenic stop with accurate travel buffers. Unmatched agent intelligence."
+    review: "When our highway stretch had a monsoon diversion, TripSaathi's live disruption engine kicked in immediately and gave us an alternate scenic stop with accurate travel buffers. Unmatched agent intelligence."
   },
   {
     id: 3,
@@ -168,7 +168,7 @@ const TESTIMONIALS = [
     avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
     rating: 5,
     verified: true,
-    review: "TravelPilot made discovering India effortless. Realistic ticket costs, zero hallucinations, and Namaste AI on the corner felt like having a local historian in our pocket at Agra and Kevadia."
+    review: "TripSaathi made discovering India effortless. Realistic ticket costs, zero hallucinations, and Namaste AI on the corner felt like having a local historian in our pocket at Agra and Kevadia."
   }
 ];
 

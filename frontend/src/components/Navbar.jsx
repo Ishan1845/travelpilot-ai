@@ -16,7 +16,7 @@ export default function Navbar({ activePage, setActivePage, onTriggerNewTrip, sa
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-sky-900 to-indigo-900 bg-clip-text text-transparent">
-                TravelPilot
+                TripSaathi
               </span>
               <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-orange-50 text-orange-800 border border-orange-200 px-2 py-0.5 rounded-full">
                 <IndianRupee className="w-2.5 h-2.5 text-orange-600" />

@@ -39,7 +39,7 @@ export default function AlreadySelectedModal({ isOpen, onClose, onOpenSavedTrip,
         </div>
 
         <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mb-5">
-          A trip to <strong className="text-slate-900">{meta.destination}</strong> with the exact same criteria is already saved in your history section. TravelPilot does not create duplicate entries for the identical location and constraints.
+          A trip to <strong className="text-slate-900">{meta.destination}</strong> with the exact same criteria is already saved in your history section. TripSaathi does not create duplicate entries for the identical location and constraints.
         </p>
 
         {/* Existing Trip Criteria Summary */}

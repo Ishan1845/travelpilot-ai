@@ -1,14 +1,14 @@
-# 🌍 TravelPilot AI — Intelligent Trip Planning & Autonomous Agent
+# 🌍 TripSaathi AI — Intelligent Trip Planning & Autonomous Agent
 
-[![Live Website](https://img.shields.io/badge/Live%20Website-travelpilot--ai-black?style=for-the-badge&logo=vercel)](https://travelpilot-ai-app.vercel.app)
-[![Vercel Deployment](https://img.shields.io/badge/Deployment-Ready-emerald?style=for-the-badge)](https://travelpilot-ai-app.vercel.app)
+[![Live Website](https://img.shields.io/badge/Live%20Website-tripsaathi--ai-black?style=for-the-badge&logo=vercel)](https://travelpilot-ai-three.vercel.app)
+[![Vercel Deployment](https://img.shields.io/badge/Deployment-Ready-emerald?style=for-the-badge)](https://travelpilot-ai-three.vercel.app)
 
-> ### 🚀 **Launch Live Application**: **[https://travelpilot-ai-app.vercel.app](https://travelpilot-ai-app.vercel.app)**
-> **Click the link above to immediately run and use TravelPilot AI directly in your browser!**
+> ### 🚀 **Launch Live Application**: **[https://travelpilot-ai-three.vercel.app](https://travelpilot-ai-three.vercel.app)**
+> **Click the link above to immediately run and use TripSaathi AI directly in your browser!**
 
 ---
 
-TravelPilot AI is an agentic travel planner designed to create day-by-day itineraries grounded in real POI data, answer context-aware questions, and **dynamically rebuild affected parts of the itinerary when an activity changes or is cancelled — without regenerating unaffected days**.
+TripSaathi AI is an agentic travel planner designed to create day-by-day itineraries grounded in real POI data, answer context-aware questions, and **dynamically rebuild affected parts of the itinerary when an activity changes or is cancelled — without regenerating unaffected days**.
 
 ## Key Features
 

@@ -9,7 +9,7 @@ def main():
     frontend_dir = os.path.join(base_dir, "frontend")
 
     print("=" * 60)
-    print("Starting TravelPilot — Intelligent Trip Planning & Disruption Agent")
+    print("Starting TripSaathi — Intelligent Trip Planning & Disruption Agent")
     print("=" * 60)
 
     print("\n1. Launching FastAPI Backend on http://localhost:8000...")
@@ -27,7 +27,7 @@ def main():
     )
 
     print("\n" + "=" * 60)
-    print("TravelPilot is LIVE!")
+    print("TripSaathi is LIVE!")
     print("Frontend URL: http://localhost:5173")
     print("Backend API : http://localhost:8000/docs")
     print("=" * 60)
@@ -37,7 +37,7 @@ def main():
         backend_proc.wait()
         frontend_proc.wait()
     except KeyboardInterrupt:
-        print("\nShutting down TravelPilot servers...")
+        print("\nShutting down TripSaathi servers...")
         backend_proc.terminate()
         frontend_proc.terminate()
 

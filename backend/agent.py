@@ -333,7 +333,7 @@ def generate_itinerary_agentic(request: GenerateRequest) -> Itinerary:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
         system_prompt = (
-            "You are TravelPilot, an expert travel planner agent. "
+            "You are TripSaathi, an expert travel planner agent. "
             "All pricing must be in Indian Rupees (INR ₹). "
             "Scale costs for the specified group size (members_count) and include verified transportation. "
             "You MUST use the provided tools (`search_places`, `estimate_travel_time`, `check_conflicts`) "

@@ -22,7 +22,7 @@ export default function Footer({ onNavigatePage }) {
               </div>
               <div>
                 <span className="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                  TravelPilot
+                  TripSaathi
                   <span className="text-[10px] font-extrabold bg-orange-500/30 text-orange-300 px-1.5 py-0.5 rounded border border-orange-500/40">
                     INDIA
                   </span>
@@ -166,7 +166,7 @@ export default function Footer({ onNavigatePage }) {
                 />
               ))}
             </svg>
-            <span>© 2026 TravelPilot India • All Rights Reserved</span>
+            <span>© 2026 TripSaathi India • All Rights Reserved</span>
           </div>
 
           <div className="flex items-center gap-4 text-xs text-slate-400 flex-wrap justify-center">

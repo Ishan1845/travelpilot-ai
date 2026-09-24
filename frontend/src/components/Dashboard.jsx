@@ -197,7 +197,7 @@ export default function Dashboard({ itinerary, onUpdateConstraints, isUpdating }
           <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 animate-fadeIn">
             <h4 className="text-lg font-bold text-slate-900 mb-1">Adjust Trip Constraints</h4>
             <p className="text-xs text-slate-500 mb-4">
-              Update your budget, group size, or transportation mode. TravelPilot rebalances impacted days dynamically.
+              Update your budget, group size, or transportation mode. TripSaathi rebalances impacted days dynamically.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">

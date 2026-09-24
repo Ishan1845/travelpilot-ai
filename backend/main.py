@@ -15,10 +15,10 @@ from agent import generate_itinerary_agentic, chat_agent
 from disruption_engine import rebuild_disrupted_day, handle_update_constraints, handle_resequence_delay
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("travelpilot")
+logger = logging.getLogger("tripsaathi")
 
 app = FastAPI(
-    title="TravelPilot API",
+    title="TripSaathi API",
     description="Intelligent Trip Planning & Disruption Management Agent API",
     version="1.0.0"
 )
@@ -42,7 +42,7 @@ SAMPLE_QUOTES = [
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "service": "TravelPilot Agent API", "version": "1.0.0"}
+    return {"status": "healthy", "service": "TripSaathi Agent API", "version": "1.0.0"}
 
 @app.get("/api/quotes")
 def get_travel_quotes():

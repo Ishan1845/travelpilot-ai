@@ -298,7 +298,7 @@ def handle_resequence_delay(
     """
     Living Itinerary Real-Time Ripple Disruption Engine:
     Detects when a flight, train, or highway transport gets delayed (e.g. by 3 hours).
-    Instead of a static booking display like MMT, TravelPilot asks:
+    Instead of a static booking display like MMT, TripSaathi asks:
     'Your flight got delayed by 3 hours — should I push everything after it?'
     and re-sequences the downstream schedule automatically.
     """
@@ -365,7 +365,7 @@ def handle_resequence_delay(
     transport_word = disruption_type.replace('_delay', '').replace('_', ' ')
     proactive_question = (
         f"Your {transport_word} got delayed by {delay_label} — "
-        f"TravelPilot detected the ripple effect across {len(shifts)} remaining activities on Day {target_day.day_number}. "
+        f"TripSaathi detected the ripple effect across {len(shifts)} remaining activities on Day {target_day.day_number}. "
         f"Should I push everything after it? The living itinerary has been re-sequenced automatically."
     )
 
@@ -373,7 +373,7 @@ def handle_resequence_delay(
     shifted_details_str = ", ".join(shifted_strs)
 
     ripple_summary = (
-        f"TravelPilot Living Itinerary Engine detected a {delay_label} delay on {delay_title}. "
+        f"TripSaathi Living Itinerary Engine detected a {delay_label} delay on {delay_title}. "
         f"Automatically absorbed the delay and re-sequenced {len(shifts)} activities on Day {target_day.day_number}: "
         f"{shifted_details_str}. "
         f"All transit buffers and arrival windows synchronized in real time."
