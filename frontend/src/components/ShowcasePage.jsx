@@ -218,6 +218,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
 
   const bookingRates = getBookingRates();
   const totalBookingCost = bookingRates.perPerson * bookingMembers;
+  const [destError, setDestError] = useState("");
 
   const filteredDestinations = selectedCategory === "All" 
     ? FAMOUS_DESTINATIONS 
@@ -227,9 +228,11 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
     const dest = bookingDest ? bookingDest.trim() : "";
     const orig = bookingOrigin ? bookingOrigin.trim() : "";
     if (!dest) {
-      if (onStartPlanner) onStartPlanner();
+      setDestError("Please select or enter your destination (TO) first to plan your grounded trip!");
+      setTimeout(() => setDestError(""), 4000);
       return;
     }
+    setDestError("");
     if (onSelectDestination) {
       onSelectDestination(dest, `${dest} Experience`, orig || "Delhi", bookingMembers);
     } else if (onStartPlanner) {
@@ -327,6 +330,12 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
                 <span>Plan Grounded Trip →</span>
               </button>
             </div>
+
+            {destError && (
+              <div className="mt-3 p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/50 text-rose-300 text-xs font-bold flex items-center justify-center gap-2 animate-bounce">
+                <span>⚠️ {destError}</span>
+              </div>
+            )}
           </div>
 
           {/* Live Trust Metrics Strip */}

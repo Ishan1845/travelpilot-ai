@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import IndianFlagBackground from './components/IndianFlagBackground';
 import HALTejasTakeoffAnimation from './components/HALTejasTakeoffAnimation';
+import AirplaneAnimation5s from './components/AirplaneAnimation5s';
 import ShowcasePage from './components/ShowcasePage';
 import TripForm from './components/TripForm';
 import TimelineView from './components/TimelineView';
@@ -48,6 +49,7 @@ export default function App() {
   const [isUpdatingConstraints, setIsUpdatingConstraints] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [isPlaneFlying, setIsPlaneFlying] = useState(false);
+  const [airplaneAnimation, setAirplaneAnimation] = useState(null);
   const [duplicateModal, setDuplicateModal] = useState({ isOpen: false, existingTrip: null, criteria: null, onProceedAnyway: null });
   const [saveToast, setSaveToast] = useState(null);
   const [isViewingTransportPage, setIsViewingTransportPage] = useState(false);
@@ -170,6 +172,14 @@ export default function App() {
   };
 
   const handleGenerate = async (formData, monumentName = null) => {
+    // Launch 5-second High-Resolution Airplane Animation (IgniteMotion YwEPRJVV7V8)
+    if (formData?.destination) {
+      setAirplaneAnimation({
+        destination: formData.destination,
+        origin: formData.origin || "Delhi"
+      });
+    }
+
     setIsLoading(true);
     setApiError(null);
     setDisruptionData(null);
@@ -223,6 +233,13 @@ export default function App() {
     setIsViewingTransportPage(false);
     setSelectedStopForDetails(null);
     setActivePage('planner');
+
+    // Trigger high-resolution 5-second airplane animation
+    setAirplaneAnimation({
+      destination: destinationCity,
+      origin: originCity || "Delhi"
+    });
+
     handleGenerate(candidate, monumentName);
   };
 
@@ -569,6 +586,15 @@ export default function App() {
     <div className="min-h-screen text-slate-900 flex flex-col selection:bg-orange-100 selection:text-orange-900 relative">
       {/* Indian Flag Watermark Background */}
       <IndianFlagBackground />
+
+      {/* 5-Second High-Resolution Airplane Animation (IgniteMotion YwEPRJVV7V8) */}
+      {airplaneAnimation && (
+        <AirplaneAnimation5s
+          destination={airplaneAnimation.destination}
+          origin={airplaneAnimation.origin}
+          onComplete={() => setAirplaneAnimation(null)}
+        />
+      )}
 
       {/* Soaring HAL Tejas Takeoff Animation with Atithi Devo Bhava Reload */}
       {isPlaneFlying && (
