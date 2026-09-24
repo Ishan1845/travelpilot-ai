@@ -205,16 +205,17 @@ export default function App() {
     }
   };
 
-  const handleSelectMonumentFromShowcase = (destinationCity, monumentName) => {
+  const handleSelectMonumentFromShowcase = (destinationCity, monumentName, originCity, members) => {
     const todayStr = new Date().toISOString().split('T')[0];
     const defaultEnd = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     const candidate = {
+      origin: originCity || "Delhi",
       destination: destinationCity,
       start_date: todayStr,
       end_date: defaultEnd,
       budget: 18000,
-      members_count: 2,
+      members_count: members || 2,
       travel_mode: "road",
       interests: ["Landmarks", "Art & Culture", "Food & Dining"]
     };

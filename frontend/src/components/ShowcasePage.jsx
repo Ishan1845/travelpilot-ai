@@ -5,6 +5,7 @@ import {
   Plane, Train, Car, Users, Calendar, Filter, Check, ExternalLink, MessageSquare, Quote
 } from 'lucide-react';
 import QuoteCard from './QuoteCard';
+import PlaceSearchInput from './PlaceSearchInput';
 
 const FAMOUS_DESTINATIONS = [
   {
@@ -205,7 +206,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
 
   const handleHeroQuickGenerate = () => {
     if (onSelectDestination) {
-      onSelectDestination(bookingDest, `${bookingDest} Experience`);
+      onSelectDestination(bookingDest, `${bookingDest} Experience`, bookingOrigin, bookingMembers);
     } else if (onStartPlanner) {
       onStartPlanner();
     }
@@ -247,31 +248,34 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
           </p>
 
           {/* Interactive Aurora Search / Quick Planner Bar */}
-          <div className="mt-8 p-3 sm:p-4 rounded-2xl bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl shadow-2xl max-w-3xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
-              {/* Destination Input */}
-              <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-3">
-                <label className="text-[10px] font-extrabold uppercase tracking-wider text-[#FF8800] flex items-center gap-1">
-                  <MapPin className="w-3 h-3 text-[#007BFF]" />
-                  Destination
-                </label>
-                <select 
-                  value={bookingDest} 
-                  onChange={(e) => setBookingDest(e.target.value)}
-                  className="w-full bg-transparent text-white font-bold text-xs sm:text-sm mt-1 focus:outline-none cursor-pointer"
-                >
-                  <option value="Agra" className="bg-slate-900 text-white">Agra (Taj Mahal & Fort)</option>
-                  <option value="Jaipur" className="bg-slate-900 text-white">Jaipur (Pink City & Forts)</option>
-                  <option value="Varanasi" className="bg-slate-900 text-white">Varanasi (Ganga Ghats)</option>
-                  <option value="Goa" className="bg-slate-900 text-white">Goa (Beaches & Forts)</option>
-                  <option value="Kerala" className="bg-slate-900 text-white">Kerala (Backwaters & Munnar)</option>
-                  <option value="Kevadia" className="bg-slate-900 text-white">Kevadia (Statue of Unity)</option>
-                  <option value="Paris" className="bg-slate-900 text-white">Paris (Eiffel Tower & Louvre)</option>
-                </select>
-              </div>
+          <div className="mt-8 p-3 sm:p-4 rounded-2xl bg-slate-900/90 border border-slate-700/80 backdrop-blur-xl shadow-2xl max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-left">
+              {/* 1. From (Starting Location) with Same-Name Places Autocomplete */}
+              <PlaceSearchInput
+                label="From"
+                value={bookingOrigin}
+                onChange={setBookingOrigin}
+                placeholder="Starting city (e.g. Delhi...)"
+                dark={true}
+                labelColor="text-[#FF8800]"
+                iconColor="text-[#007BFF]"
+                id="hero-booking-from"
+              />
 
-              {/* Members Selection */}
-              <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-3">
+              {/* 2. To (Destined Location) with Same-Name Places Autocomplete */}
+              <PlaceSearchInput
+                label="To"
+                value={bookingDest}
+                onChange={setBookingDest}
+                placeholder="Destination city (e.g. Agra...)"
+                dark={true}
+                labelColor="text-[#007BFF]"
+                iconColor="text-[#FF8800]"
+                id="hero-booking-to"
+              />
+
+              {/* 3. Members Selection */}
+              <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-3 flex flex-col justify-between">
                 <label className="text-[10px] font-extrabold uppercase tracking-wider text-[#FF8800] flex items-center gap-1">
                   <Users className="w-3 h-3 text-[#007BFF]" />
                   Travelers
@@ -288,11 +292,11 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
                 </select>
               </div>
 
-              {/* Instant Aurora Generate Button */}
+              {/* 4. Instant Aurora Generate Button */}
               <button
                 type="button"
                 onClick={handleHeroQuickGenerate}
-                className="aurora-glow-button text-white font-black text-xs sm:text-sm rounded-xl px-5 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all hover:brightness-110"
+                className="aurora-glow-button text-white font-black text-xs sm:text-sm rounded-xl px-4 py-3 flex items-center justify-center gap-2 cursor-pointer transition-all hover:brightness-110 h-full min-h-[56px]"
               >
                 <Sparkles className="w-4 h-4 text-white animate-spin" />
                 <span>Plan Grounded Trip →</span>
@@ -525,7 +529,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
               {/* Departure to Arrival Timeline */}
               <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-slate-950/80 border border-slate-800/80">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Origin Hub</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">From (Origin)</span>
                   <span className="text-base sm:text-lg font-black text-white">{bookingOrigin}</span>
                   <span className="text-[11px] text-slate-400 block mt-0.5">Terminal / Station Gate A</span>
                 </div>
@@ -541,7 +545,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Destination</span>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">To (Destination)</span>
                   <span className="text-base sm:text-lg font-black text-white">{bookingDest}</span>
                   <span className="text-[11px] text-slate-400 block mt-0.5">City Gateway Junction</span>
                 </div>
@@ -593,7 +597,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
               {/* Action Trigger */}
               <button
                 type="button"
-                onClick={() => onSelectDestination && onSelectDestination(bookingDest, `${bookingDest} Journey`)}
+                onClick={() => onSelectDestination && onSelectDestination(bookingDest, `${bookingDest} Journey`, bookingOrigin, bookingMembers)}
                 className="aurora-glow-button w-full py-3 px-4 text-white font-extrabold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>Reserve in Trip Planner</span>

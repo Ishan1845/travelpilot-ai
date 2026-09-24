@@ -3,6 +3,7 @@ import {
   MapPin, Calendar, IndianRupee, Heart, Sparkles, 
   Loader2, Users, Plane, Car, Train, ShieldCheck, Clock 
 } from 'lucide-react';
+import PlaceSearchInput from './PlaceSearchInput';
 
 const INTEREST_OPTIONS = [
   "Landmarks",
@@ -75,35 +76,29 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Starting Location (Origin) */}
+          {/* Starting Location (Origin / From) */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-orange-600" />
-              Starting Location (From Where We Are Going)
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter starting city (e.g. Vadodara, Delhi, Mumbai, Bengaluru...)"
+            <PlaceSearchInput
+              label="Starting Location (From Where We Are Going)"
               value={origin}
-              onChange={(e) => setOrigin(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all text-sm"
+              onChange={setOrigin}
+              placeholder="Enter starting city (e.g. Vadodara, Delhi, Mumbai...)"
+              dark={false}
+              required={true}
+              id="trip-origin"
             />
           </div>
 
-          {/* Destined Location */}
+          {/* Destined Location (To) */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-sky-600" />
-              Destined Location (Where We Are Going)
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter destination city (e.g. Agra, Jaipur, Varanasi, Goa, Paris...)"
+            <PlaceSearchInput
+              label="Destined Location (Where We Are Going)"
               value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm"
+              onChange={setDestination}
+              placeholder="Enter destination city (e.g. Agra, Jaipur, Varanasi, Goa...)"
+              dark={false}
+              required={true}
+              id="trip-destination"
             />
           </div>
 
