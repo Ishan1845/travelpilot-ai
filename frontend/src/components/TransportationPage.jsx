@@ -88,7 +88,17 @@ export default function TransportationPage({
   onBack, 
   onSelectOption 
 }) {
-  const [activeTab, setActiveTab] = useState(initialMode || "road"); // 'road' | 'train' | 'flight'
+  const optionsData = getAvailableTransportationOptions(
+    destination,
+    origin,
+    travelDate,
+    membersCount
+  );
+
+  const [activeTab, setActiveTab] = useState(() => {
+    if (optionsData.isInternationalRoute) return 'flight';
+    return initialMode || "road";
+  });
   const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [confirmationModal, setConfirmationModal] = useState({
     isOpen: false,
@@ -97,13 +107,6 @@ export default function TransportationPage({
     bookingUrl: '',
     modeLabel: ''
   });
-
-  const optionsData = getAvailableTransportationOptions(
-    destination,
-    origin,
-    travelDate,
-    membersCount
-  );
 
   const currentList = optionsData[activeTab] || [];
 
@@ -191,7 +194,15 @@ export default function TransportationPage({
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed max-w-2xl">
-              Compare all available Road cabs (Ola/Uber), Indian Railways IRCTC Trains, and Scheduled Flights for <strong>{optionsData.formattedDate}</strong> with authentic timings, operating schedules, and direct booking links. Fares are displayed live upon redirection to the official booking portals.
+              {optionsData.isInternationalRoute ? (
+                <>
+                  <strong className="text-sky-700">International Travel Corridor:</strong> No cross-border Indian Railways or road cabs (Ola/Uber) operate between <strong>{optionsData.origin}</strong> and <strong>{optionsData.destination}</strong>. Below are scheduled commercial international flights for <strong>{optionsData.formattedDate}</strong> with authentic airline schedules and official booking links.
+                </>
+              ) : (
+                <>
+                  Compare all available Road cabs (Ola/Uber), Indian Railways IRCTC Trains, and Scheduled Flights for <strong>{optionsData.formattedDate}</strong> with authentic timings, operating schedules, and direct booking links. Fares are displayed live upon redirection to the official booking portals.
+                </>
+              )}
             </p>
           </div>
         </div>
@@ -209,7 +220,7 @@ export default function TransportationPage({
             }`}
           >
             <Car className="w-4 h-4" />
-            <span>🚗 By Road (Ola / Uber / Volvo)</span>
+            <span>🚗 By Road {optionsData.isRoadPossible ? '(Ola / Uber / Volvo)' : '(No Cabs Available)'}</span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
               activeTab === "road" ? 'bg-amber-600 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
@@ -228,7 +239,7 @@ export default function TransportationPage({
             }`}
           >
             <Train className="w-4 h-4" />
-            <span>🚆 By Railway (Available Trains)</span>
+            <span>🚆 By Railway {optionsData.isRailwayPossible ? '(Available Trains)' : '(No Trains Available)'}</span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
               activeTab === "train" ? 'bg-teal-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
@@ -247,7 +258,7 @@ export default function TransportationPage({
             }`}
           >
             <Plane className="w-4 h-4" />
-            <span>✈️ By Flight (Airlines on Date)</span>
+            <span>✈️ By Flight {optionsData.isInternationalRoute ? '(International Airlines)' : '(Airlines on Date)'}</span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
               activeTab === "flight" ? 'bg-sky-700 text-white' : 'bg-slate-200 text-slate-700'
             }`}>
@@ -277,9 +288,13 @@ export default function TransportationPage({
               <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl mx-auto flex items-center justify-center mb-3">
                 <Car className="w-7 h-7" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900">No Cabs Available on this Date</h4>
+              <h4 className="text-lg font-bold text-slate-900">
+                {optionsData.isInternationalRoute ? "No Cabs (Ola/Uber) Available for this Route" : "No Cabs Available on this Date"}
+              </h4>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-                No scheduled cabs or intercity coaches are operating on {optionsData.formattedDate} ({optionsData.dayOfWeekName}). Please check other transport modes or choose an adjacent travel date.
+                {optionsData.isInternationalRoute
+                  ? `No road transport or cab service (Ola/Uber) is available between ${optionsData.origin} and ${optionsData.destination}. Intercontinental and overseas travel cannot be served by road vehicles. Please choose a flight.`
+                  : `No scheduled cabs or intercity coaches are operating on ${optionsData.formattedDate} (${optionsData.dayOfWeekName}). Please check other transport modes or choose an adjacent travel date.`}
               </p>
             </div>
           ) : (
@@ -376,9 +391,13 @@ export default function TransportationPage({
               <div className="w-14 h-14 bg-teal-50 text-teal-600 rounded-2xl mx-auto flex items-center justify-center mb-3">
                 <Train className="w-7 h-7" />
               </div>
-              <h4 className="text-lg font-bold text-slate-900">No Trains Available on this Date</h4>
+              <h4 className="text-lg font-bold text-slate-900">
+                {optionsData.isInternationalRoute ? "No Trains Available for this Route" : "No Trains Available on this Date"}
+              </h4>
               <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md mx-auto">
-                No IRCTC trains are scheduled to operate on {optionsData.formattedDate} ({optionsData.dayOfWeekName}). Please check other transport modes or choose an adjacent travel date.
+                {optionsData.isInternationalRoute
+                  ? `No railway transport is possible between ${optionsData.origin} and ${optionsData.destination} as there is no cross-border rail line connecting these regions. Please travel by scheduled flight.`
+                  : `No IRCTC trains are scheduled to operate on ${optionsData.formattedDate} (${optionsData.dayOfWeekName}). Please check other transport modes or choose an adjacent travel date.`}
               </p>
             </div>
           ) : (

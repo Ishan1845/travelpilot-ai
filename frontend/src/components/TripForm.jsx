@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, Calendar, IndianRupee, Heart, Sparkles, 
-  Loader2, Users, Plane, Car, Train, ShieldCheck, Clock 
+  Loader2, Users, Plane, Car, Train, ShieldCheck, Clock, Ban
 } from 'lucide-react';
 import PlaceSearchInput from './PlaceSearchInput';
+import { isInternationalTransit } from '../data/transportData';
 
 const INTEREST_OPTIONS = [
   "Landmarks",
@@ -27,6 +28,15 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
   const [membersCount, setMembersCount] = useState(initialMembers || 2);
   const [travelMode, setTravelMode] = useState("road"); // 'road' | 'train' | 'flight'
   const [selectedInterests, setSelectedInterests] = useState(["Landmarks", "Art & Culture", "Food & Dining"]);
+
+  const isInternational = isInternationalTransit(origin, destination);
+
+  // If international route, railway and road are impossible — default to flight!
+  useEffect(() => {
+    if (isInternational && travelMode !== "flight") {
+      setTravelMode("flight");
+    }
+  }, [isInternational, travelMode]);
 
   const toggleInterest = (interest) => {
     if (selectedInterests.includes(interest)) {
@@ -132,33 +142,51 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
               ) : (
                 <Car className="w-3.5 h-3.5 text-amber-600" />
               )}
-              Transportation Mode (Live & Verified IRCTC / NH / Flight)
+              Transportation Mode {isInternational ? "(International Flight Only)" : "(Live & Verified IRCTC / NH / Flight)"}
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <button
                 type="button"
-                onClick={() => setTravelMode("road")}
-                className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  travelMode === "road"
-                    ? 'bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-400/20 shadow-xs'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
+                onClick={() => {
+                  if (isInternational) {
+                    alert("No road transport or cab service (Ola/Uber) is possible for this international route. Flight is the only available travel mode.");
+                    return;
+                  }
+                  setTravelMode("road");
+                }}
+                className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  isInternational
+                    ? 'opacity-40 bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                    : travelMode === "road"
+                      ? 'bg-amber-50 text-amber-900 border-amber-300 ring-2 ring-amber-400/20 shadow-xs cursor-pointer'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 cursor-pointer'
                 }`}
+                title={isInternational ? "Ola/Uber does not operate for international routes" : "Road / Expressway"}
               >
-                <Car className="w-4 h-4 text-amber-600" />
-                <span>🚗 By Road / Expressway</span>
+                <Car className={`w-4 h-4 ${isInternational ? 'text-slate-400' : 'text-amber-600'}`} />
+                <span>🚗 {isInternational ? 'Road (Not Available)' : 'By Road / Expressway'}</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setTravelMode("train")}
-                className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                  travelMode === "train"
-                    ? 'bg-teal-50 text-teal-900 border-teal-300 ring-2 ring-teal-400/20 shadow-xs'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
+                onClick={() => {
+                  if (isInternational) {
+                    alert("No railway transport is possible between different countries. Cross-border travel cannot be serviced by train. Please choose Flight.");
+                    return;
+                  }
+                  setTravelMode("train");
+                }}
+                className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  isInternational
+                    ? 'opacity-40 bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
+                    : travelMode === "train"
+                      ? 'bg-teal-50 text-teal-900 border-teal-300 ring-2 ring-teal-400/20 shadow-xs cursor-pointer'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 cursor-pointer'
                 }`}
+                title={isInternational ? "No railway transport across international borders" : "Railway / Train"}
               >
-                <Train className="w-4 h-4 text-teal-600" />
-                <span>🚆 By Railway / Train</span>
+                <Train className={`w-4 h-4 ${isInternational ? 'text-slate-400' : 'text-teal-600'}`} />
+                <span>🚆 {isInternational ? 'Train (Not Available)' : 'By Railway / Train'}</span>
               </button>
 
               <button
@@ -171,7 +199,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
                 }`}
               >
                 <Plane className="w-4 h-4 text-sky-600" />
-                <span>✈️ By Flight / Air</span>
+                <span>✈️ By Flight / Air {isInternational ? '(Verified)' : ''}</span>
               </button>
             </div>
 
@@ -179,15 +207,19 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
               <button
                 type="button"
                 onClick={() => onOpenTransportPage({
-                  origin: origin.trim() || "Vadodara",
-                  destination: destination.trim() || "Agra",
+                  origin: origin.trim() || (isInternational ? "Delhi" : "Vadodara"),
+                  destination: destination.trim() || (isInternational ? "Paris" : "Agra"),
                   startDate,
-                  travelMode,
+                  travelMode: isInternational ? "flight" : travelMode,
                   membersCount
                 })}
                 className="w-full mt-2.5 py-2 px-3 bg-gradient-to-r from-sky-50 via-indigo-50 to-teal-50 hover:from-sky-100 hover:to-indigo-100 text-sky-900 border border-sky-200 hover:border-sky-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
               >
-                <span>🔍 View All Available Road (Ola/Cabs), Railway (IRCTC Trains) & Flights From {origin || "Selected Location"} →</span>
+                <span>
+                  {isInternational 
+                    ? `🔍 View Available Flights for ${destination || "International Destination"} →` 
+                    : `🔍 View All Available Road (Ola/Cabs), Railway (IRCTC Trains) & Flights From ${origin || "Selected Location"} →`}
+                </span>
               </button>
             )}
           </div>

@@ -299,7 +299,7 @@ def build_grounded_itinerary_programmatic(
             end_date=end_date,
             budget=budget,
             members_count=members_count,
-            travel_mode="flight" if travel_mode.lower() == "flight" else ("train" if travel_mode.lower() == "train" else "road"),
+            travel_mode=transport_obj.mode,
             transportation=transport_obj,
             interests=interests
         ),

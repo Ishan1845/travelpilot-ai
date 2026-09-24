@@ -48,6 +48,9 @@ class TransportationInfo(BaseModel):
     verified_schedule: str
     notes: Optional[str] = ""
     available_modes: Optional[Dict[str, Any]] = None
+    is_international: Optional[bool] = False
+    is_railway_possible: Optional[bool] = True
+    is_road_possible: Optional[bool] = True
 
 class TripMetadata(BaseModel):
     destination: str

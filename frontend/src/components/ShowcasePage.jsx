@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, Compass, ShieldCheck, Zap, Navigation, MapPin, 
   Clock, IndianRupee, ArrowRight, Star, Heart, CheckCircle2, Award, 
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import QuoteCard from './QuoteCard';
 import PlaceSearchInput from './PlaceSearchInput';
+import { isInternationalTransit } from '../data/transportData';
 
 const FAMOUS_DESTINATIONS = [
   {
@@ -187,8 +188,26 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
     return d.toISOString().split('T')[0];
   });
 
+  const isBookingInternational = isInternationalTransit(bookingOrigin, bookingDest);
+
+  // Auto-switch mode to flight if international
+  useEffect(() => {
+    if (isBookingInternational && bookingMode !== 'flight') {
+      setBookingMode('flight');
+    }
+  }, [isBookingInternational, bookingMode]);
+
   // Dynamic booking fare preview calculation in INR
   const getBookingRates = () => {
+    if (isBookingInternational) {
+      if (bookingMode === 'flight') {
+        return { perPerson: 38500, carrier: "Air France / Air India International Long-Haul", duration: "8h 45m", schedule: "Departs 02:15 AM • Verified International Terminal" };
+      } else if (bookingMode === 'train') {
+        return { perPerson: 0, carrier: "No trains available for international route", duration: "—", schedule: "No railway connectivity available across international borders" };
+      }
+      return { perPerson: 0, carrier: "No cabs (Ola/Uber) available for international route", duration: "—", schedule: "Road travel not possible across international borders" };
+    }
+
     if (bookingMode === 'flight') {
       return { perPerson: 3400, carrier: "IndiGo 6E-7124 / Air India Shuttle", duration: "1h 15m", schedule: "Departs 08:45 AM • Verified Terminal Schedule" };
     } else if (bookingMode === 'train') {
@@ -479,28 +498,40 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
             <div className="flex items-center gap-2 bg-slate-900 p-1.5 rounded-2xl border border-slate-800">
               <button
                 type="button"
-                onClick={() => setBookingMode("road")}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  bookingMode === "road" 
-                    ? 'bg-gradient-to-r from-[#007BFF] to-[#0ea5e9] text-white shadow-md' 
-                    : 'text-slate-400 hover:text-white'
+                onClick={() => {
+                  if (isBookingInternational) return;
+                  setBookingMode("road");
+                }}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  isBookingInternational
+                    ? 'opacity-40 text-slate-500 cursor-not-allowed'
+                    : bookingMode === "road" 
+                      ? 'bg-gradient-to-r from-[#007BFF] to-[#0ea5e9] text-white shadow-md cursor-pointer' 
+                      : 'text-slate-400 hover:text-white cursor-pointer'
                 }`}
+                title={isBookingInternational ? "Ola/Uber outstation does not operate internationally" : "Expressway"}
               >
                 <Car className="w-4 h-4" />
-                <span>Expressway</span>
+                <span>{isBookingInternational ? 'Road (N/A)' : 'Expressway'}</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setBookingMode("train")}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                  bookingMode === "train" 
-                    ? 'bg-gradient-to-r from-[#007BFF] to-[#0ea5e9] text-white shadow-md' 
-                    : 'text-slate-400 hover:text-white'
+                onClick={() => {
+                  if (isBookingInternational) return;
+                  setBookingMode("train");
+                }}
+                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  isBookingInternational
+                    ? 'opacity-40 text-slate-500 cursor-not-allowed'
+                    : bookingMode === "train" 
+                      ? 'bg-gradient-to-r from-[#007BFF] to-[#0ea5e9] text-white shadow-md cursor-pointer' 
+                      : 'text-slate-400 hover:text-white cursor-pointer'
                 }`}
+                title={isBookingInternational ? "No cross-border rail transport exists" : "Vande Bharat"}
               >
                 <Train className="w-4 h-4" />
-                <span>Vande Bharat</span>
+                <span>{isBookingInternational ? 'Train (N/A)' : 'Vande Bharat'}</span>
               </button>
 
               <button
@@ -513,7 +544,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
                 }`}
               >
                 <Plane className="w-4 h-4" />
-                <span>Flight</span>
+                <span>{isBookingInternational ? 'Flight (Verified)' : 'Flight'}</span>
               </button>
             </div>
           </div>

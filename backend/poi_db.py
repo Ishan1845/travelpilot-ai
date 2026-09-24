@@ -1576,6 +1576,32 @@ def get_pois_for_destination(destination: str) -> List[Dict[str, Any]]:
             return pois
     return generate_dynamic_pois_for_city(target_dest)
 
+FOREIGN_LOCATIONS_SET = {
+    "paris", "france", "tokyo", "japan", "dubai", "uae", "united arab emirates",
+    "singapore", "london", "uk", "united kingdom", "england", "great britain",
+    "new york", "usa", "united states", "america", "california", "texas", "florida",
+    "rome", "italy", "milan", "venice", "florence", "switzerland", "zurich", "geneva",
+    "berlin", "germany", "munich", "frankfurt", "amsterdam", "netherlands", "holland",
+    "madrid", "spain", "barcelona", "vienna", "austria", "brussels", "belgium",
+    "athens", "greece", "istanbul", "turkey", "bangkok", "thailand", "phuket", "pattaya",
+    "bali", "indonesia", "jakarta", "kuala lumpur", "malaysia", "sydney", "australia",
+    "melbourne", "toronto", "canada", "vancouver", "montreal", "cairo", "egypt",
+    "maldives", "male", "mauritius", "colombo", "sri lanka", "kathmandu", "nepal",
+    "doha", "qatar", "riyadh", "saudi arabia", "jeddah", "seoul", "south korea", "korea",
+    "hanoi", "vietnam", "ho chi minh", "beijing", "china", "shanghai", "hong kong",
+    "moscow", "russia", "auckland", "new zealand", "dublin", "ireland", "lisbon", "portugal",
+    "oslo", "norway", "stockholm", "sweden", "copenhagen", "denmark", "helsinki", "finland",
+    "prague", "czech", "budapest", "hungary", "warsaw", "poland", "mexico", "brazil",
+    "buenos aires", "argentina", "cape town", "south africa", "johannesburg",
+    "manila", "philippines", "taipei", "taiwan"
+}
+
+def is_foreign_place(place_str: str) -> bool:
+    if not place_str:
+        return False
+    p = place_str.lower().strip()
+    return any(k in p for k in FOREIGN_LOCATIONS_SET)
+
 def get_realistic_transportation(
     destination: str,
     travel_mode: str,
@@ -1591,6 +1617,108 @@ def get_realistic_transportation(
     target_mode = travel_mode.lower().strip()
     if target_mode not in ["flight", "train", "road"]:
         target_mode = "road"
+
+    # Check whether this is an international / cross-border route
+    is_dest_foreign = is_foreign_place(dest_clean)
+    is_orig_foreign = is_foreign_place(effective_origin or "")
+    is_international = is_dest_foreign or is_orig_foreign
+
+    if is_international:
+        dist_km = 6500.0
+        flight_hrs = 8.5
+        flight_fare = 38000.0
+        airline_name = "Air India / International Commercial Airlines"
+        airport_code = "INTL"
+
+        if "paris" in dest_lower or "france" in dest_lower:
+            dist_km = 6700.0
+            flight_hrs = 8.5
+            flight_fare = 39800.0
+            airline_name = "Air France AF-225 / Air India"
+            airport_code = "CDG"
+        elif "london" in dest_lower or "uk" in dest_lower or "england" in dest_lower:
+            dist_km = 6750.0
+            flight_hrs = 9.2
+            flight_fare = 42500.0
+            airline_name = "British Airways BA-142 / Virgin Atlantic"
+            airport_code = "LHR"
+        elif "dubai" in dest_lower or "uae" in dest_lower:
+            dist_km = 2200.0
+            flight_hrs = 3.8
+            flight_fare = 18500.0
+            airline_name = "Emirates EK-511 / Air India Express"
+            airport_code = "DXB"
+        elif "tokyo" in dest_lower or "japan" in dest_lower:
+            dist_km = 5900.0
+            flight_hrs = 7.8
+            flight_fare = 44500.0
+            airline_name = "Japan Airlines JL-750 / ANA"
+            airport_code = "HND"
+        elif "singapore" in dest_lower:
+            dist_km = 4150.0
+            flight_hrs = 5.5
+            flight_fare = 21500.0
+            airline_name = "Singapore Airlines SQ-401 / Air India"
+            airport_code = "SIN"
+        elif "york" in dest_lower or "usa" in dest_lower or "america" in dest_lower:
+            dist_km = 11750.0
+            flight_hrs = 15.2
+            flight_fare = 64500.0
+            airline_name = "Air India AI-101 / United Airlines"
+            airport_code = "JFK"
+
+        flight_mode_data = {
+            "is_available": True,
+            "route_name": f"International Flight to {dest_clean} ({airport_code})",
+            "duration_hours": flight_hrs,
+            "cost_per_person": flight_fare,
+            "carrier_info": f"{airline_name} Scheduled International Service",
+            "schedule": f"International flight departs on {start_date} (Terminal Check-in 3h prior)"
+        }
+
+        train_mode_data = {
+            "is_available": False,
+            "route_name": f"No Trains Available to {dest_clean}",
+            "duration_hours": 0.0,
+            "cost_per_person": 0.0,
+            "carrier_info": "No railway service available for this international destination",
+            "schedule": "No railway transport is possible across international borders"
+        }
+
+        road_mode_data = {
+            "is_available": False,
+            "route_name": f"No Road Transit Available to {dest_clean}",
+            "duration_hours": 0.0,
+            "cost_per_person": 0.0,
+            "carrier_info": "Road cabs (Ola/Uber) do not operate across international borders",
+            "schedule": "No road transport is possible across international borders"
+        }
+
+        available_modes = {
+            "road": road_mode_data,
+            "train": train_mode_data,
+            "flight": flight_mode_data
+        }
+
+        per_person_fare = flight_mode_data["cost_per_person"]
+        total_transit = round(per_person_fare * max(1, members_count), 2)
+
+        return {
+            "mode": "flight",
+            "route_name": flight_mode_data["route_name"],
+            "distance_km": dist_km,
+            "duration_hours": flight_mode_data["duration_hours"],
+            "estimated_duration_hours": flight_mode_data["duration_hours"],
+            "cost_per_person": per_person_fare,
+            "total_transit_cost": total_transit,
+            "carrier_info": flight_mode_data["carrier_info"],
+            "verified_schedule": flight_mode_data["schedule"],
+            "is_international": True,
+            "is_railway_possible": False,
+            "is_road_possible": False,
+            "notes": f"Notice: Railway and road (Ola/Uber) transport are not available for international travel to {dest_clean}. Flight transit has been scheduled.",
+            "available_modes": available_modes
+        }
 
     routes_database = {
         "agra": {
@@ -1736,54 +1864,6 @@ def get_realistic_transportation(
                 "carrier_info": "Northern Railway (IRCTC Premier)",
                 "schedule": f"Departs on {start_date} at 06:45 AM"
             }
-        },
-        "paris": {
-            "distance_km": 6700.0,
-            "road": {
-                "route_name": "A1 Autoroute du Nord & Île-de-France Expressway",
-                "duration_hours": 4.0,
-                "cost_per_person": 3500.0,
-                "carrier_info": "FlixBus Executive / Eurolines AC Coach",
-                "schedule": f"Departs on {start_date} at 08:00 AM"
-            },
-            "flight": {
-                "route_name": "Direct Flights to Paris Charles de Gaulle (CDG)",
-                "duration_hours": 8.5,
-                "cost_per_person": 38000.0,
-                "carrier_info": "Air France AF-225 / Air India",
-                "schedule": f"Flight departs on {start_date} at 01:15 AM (Verified Long-Haul)"
-            },
-            "train": {
-                "route_name": "Eurostar / TGV High-Speed Rail Network",
-                "duration_hours": 2.2,
-                "cost_per_person": 8500.0,
-                "carrier_info": "SNCF / Eurostar International",
-                "schedule": f"Departs on {start_date} at 09:30 AM from Gare du Nord"
-            }
-        },
-        "tokyo": {
-            "distance_km": 5900.0,
-            "road": {
-                "route_name": "Tomei Expressway & Shuto Expressway Network",
-                "duration_hours": 4.5,
-                "cost_per_person": 4200.0,
-                "carrier_info": "Willer Express Highway Liner",
-                "schedule": f"Departs on {start_date} at 08:00 AM"
-            },
-            "flight": {
-                "route_name": "Direct Flights to Tokyo Haneda (HND) / Narita (NRT)",
-                "duration_hours": 7.8,
-                "cost_per_person": 42000.0,
-                "carrier_info": "Japan Airlines JL-750 / ANA",
-                "schedule": f"Departs on {start_date} at 19:40 PM from IGI Airport"
-            },
-            "train": {
-                "route_name": "Tokaido Shinkansen (Bullet Train N700S)",
-                "duration_hours": 2.1,
-                "cost_per_person": 9800.0,
-                "carrier_info": "JR Central (Bullet Train 320 km/h)",
-                "schedule": f"Nozomi Super Express departs on {start_date} at 09:00 AM"
-            }
         }
     }
 
@@ -1797,13 +1877,15 @@ def get_realistic_transportation(
         dist_km = 450.0
         mode_data = {
             "road": {
-                "route_name": f"National Highway & Bharatmala Expressway to {dest_clean}",
+                "is_available": True,
+                "route_name": f"National Highway & Expressway to {dest_clean}",
                 "duration_hours": 6.5,
                 "cost_per_person": 1100.0,
                 "carrier_info": "AC Multi-Axle Sleeper / Intercity Cab",
                 "schedule": f"Scheduled departure on {start_date} at 07:00 AM via National Highway Network"
             },
             "train": {
+                "is_available": True,
                 "route_name": f"IRCTC Superfast / Vande Bharat Connection to {dest_clean}",
                 "duration_hours": 4.5,
                 "cost_per_person": 1400.0,
@@ -1811,6 +1893,7 @@ def get_realistic_transportation(
                 "schedule": f"Superfast Express departs on {start_date} at 06:45 AM"
             },
             "flight": {
+                "is_available": True,
                 "route_name": f"Commercial Air Shuttle to {dest_clean} Airport",
                 "duration_hours": 1.3,
                 "cost_per_person": 3600.0,
@@ -1821,7 +1904,17 @@ def get_realistic_transportation(
     else:
         city_info = routes_database[matched_city]
         dist_km = city_info["distance_km"]
-        mode_data = city_info
+        mode_data = {
+            "road": city_info["road"],
+            "train": city_info["train"],
+            "flight": city_info["flight"]
+        }
+
+    available_modes = {
+        "road": mode_data["road"],
+        "train": mode_data["train"],
+        "flight": mode_data["flight"]
+    }
 
     selected = mode_data.get(target_mode, mode_data["road"])
     per_person_fare = selected["cost_per_person"]
@@ -1836,5 +1929,9 @@ def get_realistic_transportation(
         "cost_per_person": per_person_fare,
         "total_transit_cost": total_transit,
         "carrier_info": selected["carrier_info"],
-        "verified_schedule": selected["schedule"]
+        "verified_schedule": selected["schedule"],
+        "is_international": False,
+        "is_railway_possible": True,
+        "is_road_possible": True,
+        "available_modes": available_modes
     }
