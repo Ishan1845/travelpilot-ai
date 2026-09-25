@@ -24,7 +24,7 @@ export default function TransportationCard({ transportation, membersCount = 1, o
     if (currentMode === 'flight') {
       return `https://www.google.com/travel/flights?q=flights+from+${orig}+to+${dest}`;
     } else if (currentMode === 'train') {
-      return `https://www.irctc.co.in/nget/train-search`;
+      return `https://www.confirmtkt.com/`;
     }
     return `https://maps.google.com/?q=directions+from+${orig}+to+${dest}`;
   };
