@@ -706,10 +706,18 @@ export default function App() {
                           <Users className="w-3.5 h-3.5 text-indigo-600" />
                           <span>{itinerary.metadata.members_count} Member(s)</span>
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
-                          <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Budget: ₹{itinerary.metadata.budget?.toLocaleString('en-IN')}</span>
-                        </div>
+                        {itinerary.trip_totals?.estimated_total_cost > itinerary.metadata.budget ? (
+                          <div className="flex items-center gap-2 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-lg">
+                            <IndianRupee className="w-3.5 h-3.5 text-rose-600" />
+                            <span>Budget: ₹{itinerary.metadata.budget?.toLocaleString('en-IN')}</span>
+                            <span className="text-[10px] font-black uppercase text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded-md">Irrelevant Budget</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
+                            <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Budget: ₹{itinerary.metadata.budget?.toLocaleString('en-IN')}</span>
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2.5 flex-wrap">

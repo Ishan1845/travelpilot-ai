@@ -165,7 +165,7 @@ def check_conflicts(itinerary_data: Dict[str, Any]) -> List[Dict[str, Any]]:
             "day_number": 0,
             "stop_id": None,
             "activity_name": None,
-            "description": f"Estimated total cost (${round(total_cost, 2)}) exceeds requested budget (${round(total_budget, 2)}) by ${round(total_cost - total_budget, 2)}.",
+            "description": f"Irrelevant budget: Estimated total cost (₹{round(total_cost):,}) exceeds selected budget (₹{round(total_budget):,}). This budget does not fulfill the trip requirements.",
             "severity": "warning"
         })
 

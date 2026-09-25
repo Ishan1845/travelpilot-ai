@@ -76,8 +76,8 @@ export default function Dashboard({ itinerary, onUpdateConstraints, isUpdating }
           </div>
           <div className="mt-2 text-xs text-slate-500 font-medium flex items-center justify-between">
             <span>Budget: ₹{metadata.budget.toLocaleString('en-IN')}</span>
-            <span className={isOverBudget ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
-              {budgetRatio}%
+            <span className={isOverBudget ? 'text-rose-700 bg-rose-100 border border-rose-200 px-2 py-0.5 rounded-md font-bold' : 'text-emerald-600 font-bold'}>
+              {isOverBudget ? `Irrelevant Budget (${budgetRatio}%)` : `${budgetRatio}%`}
             </span>
           </div>
           <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1.5">
