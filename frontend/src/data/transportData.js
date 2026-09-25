@@ -110,13 +110,36 @@ export function getAvailableTransportationOptions(destination = "Agra", origin =
   const isGoa = targetLower.includes("goa");
   const isKerala = targetLower.includes("kerala") || targetLower.includes("kochi") || targetLower.includes("alleppey");
   const isDelhi = targetLower.includes("delhi");
+  const isKolkata = targetLower.includes("kolkata") || targetLower.includes("calcutta");
+  const isMumbai = targetLower.includes("mumbai") || targetLower.includes("bombay");
+  const isBengaluru = targetLower.includes("bengaluru") || targetLower.includes("bangalore");
+  const isHyderabad = targetLower.includes("hyderabad");
+  const isChennai = targetLower.includes("chennai");
+  const isAmritsar = targetLower.includes("amritsar");
+  const isLucknow = targetLower.includes("lucknow");
+  const isUdaipur = targetLower.includes("udaipur");
 
   // ==========================================
   // 1. ROAD TRANSPORT OPTIONS (Ola, Uber, Volvo, etc.)
   // If international, NO road transport / Ola / Uber is available!
   // ==========================================
-  const roadDistance = isVadodaraAgra ? 870 : (isJaipur ? 280 : (isGoa ? 580 : (isVaranasi ? 820 : (isKerala ? 1100 : 240))));
-  const roadDuration = isVadodaraAgra ? "14h 30m" : (isJaipur ? "4h 30m" : (isGoa ? "10h 30m" : (isVaranasi ? "12h 00m" : (isKerala ? "14h 00m" : "3h 30m"))));
+  const getRoadMetrics = (target) => {
+    if (target.includes("kolkata") || target.includes("calcutta")) return { distance: 1450, duration: "23h 00m" };
+    if (target.includes("mumbai") || target.includes("bombay")) return { distance: 1400, duration: "21h 00m" };
+    if (target.includes("bengaluru") || target.includes("bangalore")) return { distance: 2150, duration: "32h 00m" };
+    if (target.includes("chennai")) return { distance: 2180, duration: "34h 00m" };
+    if (target.includes("hyderabad")) return { distance: 1580, duration: "24h 00m" };
+    if (target.includes("amritsar")) return { distance: 450, duration: "7h 00m" };
+    if (target.includes("lucknow")) return { distance: 530, duration: "6h 30m" };
+    if (target.includes("udaipur")) return { distance: 660, duration: "10h 30m" };
+    if (target.includes("jaipur")) return { distance: 280, duration: "4h 00m" };
+    if (target.includes("goa")) return { distance: 580, duration: "10h 30m" };
+    if (target.includes("varanasi")) return { distance: 820, duration: "12h 00m" };
+    if (target.includes("kerala") || target.includes("kochi") || target.includes("alleppey")) return { distance: 1100, duration: "14h 00m" };
+    if (isVadodaraAgra) return { distance: 870, duration: "14h 30m" };
+    return { distance: 240, duration: "3h 30m" };
+  };
+  const { distance: roadDistance, duration: roadDuration } = getRoadMetrics(targetLower);
 
   const roadOptions = isInternational ? [] : [
     {
@@ -424,6 +447,151 @@ export function getAvailableTransportationOptions(destination = "Agra", origin =
         pantry: "Breakfast, Lunch & Afternoon Tea Included",
         cleanlinessRating: 4.9,
         punctualityRating: "98% On-Time"
+      }
+    ];
+  } else if (isKolkata) {
+    trainOptions = [
+      {
+        id: "train_12302",
+        trainNumber: "12302",
+        trainName: "Howrah Rajdhani Superfast Express",
+        route: "New Delhi (NDLS Platform 1) → Howrah Junction (HWH Platform 9)",
+        mode: "train",
+        date: dateStr,
+        formattedDate,
+        depTime: "16:50 PM",
+        arrTime: "09:55 AM (+1 Day)",
+        depStation: "New Delhi (NDLS)",
+        arrStation: "Howrah Junction (HWH)",
+        duration: "17h 05m",
+        distanceKm: 1450,
+        runningDays: "Daily except Friday",
+        classes: [
+          { code: "3A", name: "Third AC (Tejas)", fare: 2150, availability: "AVAILABLE - 74 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "2A", name: "Second AC", fare: 3100, availability: "AVAILABLE - 22 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "1A", name: "First AC", fare: 5200, availability: "AVAILABLE - 8 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+        ],
+        selectedClass: "3A",
+        costPerPerson: 2150,
+        totalCost: 2150 * count,
+        pantry: "Complimentary Hot Dinner, Morning Tea & Breakfast Included",
+        cleanlinessRating: 4.9,
+        punctualityRating: "97% On-Time"
+      },
+      {
+        id: "train_12382",
+        trainNumber: "12382",
+        trainName: "Poorva Superfast Express",
+        route: "New Delhi (NDLS Platform 8) → Howrah Junction (HWH Platform 12)",
+        mode: "train",
+        date: dateStr,
+        formattedDate,
+        depTime: "17:40 PM",
+        arrTime: "16:55 PM (+1 Day)",
+        depStation: "New Delhi (NDLS)",
+        arrStation: "Howrah Junction (HWH)",
+        duration: "23h 15m",
+        distanceKm: 1530,
+        runningDays: "Mon, Tue, Fri",
+        classes: [
+          { code: "3A", name: "Third AC", fare: 1650, availability: "AVAILABLE - 110 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "2A", name: "Second AC", fare: 2380, availability: "AVAILABLE - 34 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "SL", name: "Sleeper Class", fare: 620, availability: "AVAILABLE - 180 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+        ],
+        selectedClass: "3A",
+        costPerPerson: 1650,
+        totalCost: 1650 * count,
+        pantry: "Pantry Car & E-Catering Services",
+        cleanlinessRating: 4.5,
+        punctualityRating: "91% On-Time"
+      }
+    ];
+  } else if (isMumbai) {
+    trainOptions = [
+      {
+        id: "train_12952",
+        trainNumber: "12952",
+        trainName: "Mumbai Tejas Rajdhani Express",
+        route: "New Delhi (NDLS Platform 3) → Mumbai Central (MMCT Platform 1)",
+        mode: "train",
+        date: dateStr,
+        formattedDate,
+        depTime: "16:55 PM",
+        arrTime: "08:35 AM (+1 Day)",
+        depStation: "New Delhi (NDLS)",
+        arrStation: "Mumbai Central (MMCT)",
+        duration: "15h 40m",
+        distanceKm: 1386,
+        runningDays: "Daily",
+        classes: [
+          { code: "3A", name: "Third AC (Smart Coach)", fare: 2050, availability: "AVAILABLE - 88 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "2A", name: "Second AC", fare: 2950, availability: "AVAILABLE - 28 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "1A", name: "First AC", fare: 4850, availability: "AVAILABLE - 10 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+        ],
+        selectedClass: "3A",
+        costPerPerson: 2050,
+        totalCost: 2050 * count,
+        pantry: "Complimentary Hot Dinner & Morning Continental Breakfast",
+        cleanlinessRating: 4.9,
+        punctualityRating: "98% On-Time"
+      }
+    ];
+  } else if (isAmritsar) {
+    trainOptions = [
+      {
+        id: "train_22487",
+        trainNumber: "22487",
+        trainName: "Amritsar Vande Bharat Express",
+        route: "Delhi Junction (DLI Platform 1) → Amritsar Junction (ASR Platform 1)",
+        mode: "train",
+        date: dateStr,
+        formattedDate,
+        depTime: "15:15 PM",
+        arrTime: "20:45 PM",
+        depStation: "Delhi Junction (DLI)",
+        arrStation: "Amritsar Jn (ASR)",
+        duration: "5h 30m",
+        distanceKm: 450,
+        runningDays: "Daily except Thursday",
+        classes: [
+          { code: "CC", name: "AC Chair Car", fare: 1350, availability: "AVAILABLE - 95 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "EC", name: "Executive Class", fare: 2450, availability: "AVAILABLE - 18 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+        ],
+        selectedClass: "CC",
+        costPerPerson: 1350,
+        totalCost: 1350 * count,
+        pantry: "Evening Tea, Snacks & Hot Dinner Included",
+        cleanlinessRating: 4.9,
+        punctualityRating: "97% On-Time"
+      }
+    ];
+  } else if (isLucknow) {
+    trainOptions = [
+      {
+        id: "train_82502",
+        trainNumber: "82502",
+        trainName: "Lucknow IRCTC Tejas Express",
+        route: "New Delhi (NDLS Platform 9) → Lucknow Junction (LJN Platform 6)",
+        mode: "train",
+        date: dateStr,
+        formattedDate,
+        depTime: "15:35 PM",
+        arrTime: "22:05 PM",
+        depStation: "New Delhi (NDLS)",
+        arrStation: "Lucknow Jn (LJN)",
+        duration: "6h 30m",
+        distanceKm: 512,
+        runningDays: "Daily except Tuesday",
+        classes: [
+          { code: "CC", name: "AC Chair Car", fare: 1250, availability: "AVAILABLE - 110 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" },
+          { code: "EC", name: "Executive Class", fare: 2300, availability: "AVAILABLE - 24 Seats", statusColor: "text-emerald-700 bg-emerald-50 border-emerald-200" }
+        ],
+        selectedClass: "CC",
+        costPerPerson: 1250,
+        totalCost: 1250 * count,
+        pantry: "Onboard Hostess Hospitality & Premium Meal",
+        cleanlinessRating: 4.8,
+        punctualityRating: "96% On-Time"
       }
     ];
   } else {

@@ -89,7 +89,7 @@ export default function TransportationCard({ transportation, membersCount = 1, o
         </div>
 
         <div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Fair ({membersCount} Member{membersCount > 1 ? 's' : ''})</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Fare ({membersCount} Member{membersCount > 1 ? 's' : ''})</span>
           <div className="flex items-center gap-1 mt-0.5 text-base font-black text-emerald-700">
             <IndianRupee className="w-4 h-4" />
             <span>{totalFair > 0 ? totalFair.toLocaleString('en-IN') : 'Live Fare'}</span>
