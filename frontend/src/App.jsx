@@ -58,6 +58,33 @@ export default function App() {
   const [showDashboardSection, setShowDashboardSection] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+  const defaultEnd = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+  // Persistent Trip Planner Form Draft across page switches, transport browser & back navigation
+  const [tripFormData, setTripFormData] = useState(() => {
+    try {
+      const stored = localStorage.getItem("travelpilot_form_draft_v2");
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+    return {
+      origin: "",
+      destination: "",
+      startDate: todayStr,
+      endDate: defaultEnd,
+      budget: 15000,
+      membersCount: 2,
+      travelMode: "road",
+      selectedInterests: ["Landmarks", "Art & Culture", "Food & Dining"]
+    };
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("travelpilot_form_draft_v2", JSON.stringify(tripFormData));
+    } catch (e) {}
+  }, [tripFormData]);
+
   // Persistent History from localStorage
   const [savedTrips, setSavedTrips] = useState(() => {
     try {
@@ -472,24 +499,45 @@ export default function App() {
       travelDate: itinerary.metadata.start_date,
       initialMode: mode || itinerary.metadata.travel_mode || "road",
       membersCount: itinerary.metadata.members_count || 1,
-      currentTransportation: itinerary.metadata.transportation
+      currentTransportation: itinerary.metadata.transportation,
+      fromForm: false
     });
     setIsViewingTransportPage(true);
   };
 
   const handleOpenTransportPageFromForm = (params) => {
+    const orig = params.origin !== undefined ? params.origin : tripFormData.origin;
+    const dest = params.destination !== undefined ? params.destination : tripFormData.destination;
+    const mode = params.travelMode || tripFormData.travelMode || "road";
+
+    setTripFormData(prev => ({
+      ...prev,
+      origin: orig,
+      destination: dest,
+      travelMode: mode,
+      startDate: params.startDate || prev.startDate,
+      membersCount: params.membersCount || prev.membersCount
+    }));
+
     setTransportPageParams({
-      destination: params.destination || "Agra",
-      origin: params.origin || "Vadodara",
-      travelDate: params.startDate,
-      initialMode: params.travelMode || "road",
-      membersCount: params.membersCount || 1,
-      currentTransportation: null
+      destination: dest || "Agra",
+      origin: orig || "Vadodara",
+      travelDate: params.startDate || tripFormData.startDate,
+      initialMode: mode,
+      membersCount: params.membersCount || tripFormData.membersCount || 1,
+      currentTransportation: null,
+      fromForm: true
     });
     setIsViewingTransportPage(true);
   };
 
+  const handleTransportModeChange = (newMode) => {
+    setTripFormData(prev => ({ ...prev, travelMode: newMode }));
+  };
+
   const handleSelectTransportationOption = (updatedTrans) => {
+    setTripFormData(prev => ({ ...prev, travelMode: updatedTrans.mode }));
+
     if (itinerary) {
       const oldTransCost = itinerary.trip_totals?.transport_cost || 0;
       const newTransCost = updatedTrans.total_transit_cost || 0;
@@ -626,14 +674,16 @@ export default function App() {
         {/* DEDICATED TRANSPORTATION OPTIONS PAGE (Road Ola/Uber, Railway IRCTC, Flight) */}
         {isViewingTransportPage ? (
           <TransportationPage 
-            destination={transportPageParams?.destination || itinerary?.metadata?.destination || "Agra"}
-            origin={transportPageParams?.origin || itinerary?.metadata?.origin || "Delhi NCR"}
-            travelDate={transportPageParams?.travelDate || itinerary?.metadata?.start_date}
-            initialMode={transportPageParams?.initialMode || itinerary?.metadata?.travel_mode || "road"}
-            membersCount={transportPageParams?.membersCount || itinerary?.metadata?.members_count || 1}
+            destination={transportPageParams?.destination || itinerary?.metadata?.destination || tripFormData.destination || "Agra"}
+            origin={transportPageParams?.origin || itinerary?.metadata?.origin || tripFormData.origin || "Delhi NCR"}
+            travelDate={transportPageParams?.travelDate || itinerary?.metadata?.start_date || tripFormData.startDate}
+            initialMode={transportPageParams?.initialMode || itinerary?.metadata?.travel_mode || tripFormData.travelMode || "road"}
+            membersCount={transportPageParams?.membersCount || itinerary?.metadata?.members_count || tripFormData.membersCount || 1}
             currentTransportation={transportPageParams?.currentTransportation || itinerary?.metadata?.transportation}
+            fromForm={transportPageParams?.fromForm}
             onBack={() => setIsViewingTransportPage(false)}
             onSelectOption={handleSelectTransportationOption}
+            onModeChange={handleTransportModeChange}
           />
         ) : (
           <>
@@ -651,6 +701,8 @@ export default function App() {
                 {!itinerary ? (
                   <div className="max-w-3xl mx-auto w-full">
                     <TripForm 
+                      formData={tripFormData}
+                      onChangeFormData={setTripFormData}
                       onGenerate={handleGenerate} 
                       isLoading={isLoading} 
                       onOpenTransportPage={handleOpenTransportPageFromForm}
@@ -671,7 +723,7 @@ export default function App() {
                         title="Back to planner"
                       >
                         <ArrowLeft className="w-4 h-4 text-slate-500 group-hover:-translate-x-1 transition-transform" />
-                        <span>← Back</span>
+                        <span>← Back to Trip Planner</span>
                       </button>
 
                       {/* Namaste AI Live placed on the Left Corner */}

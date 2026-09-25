@@ -16,21 +16,62 @@ const INTEREST_OPTIONS = [
   "Traditional Bazaars"
 ];
 
-export default function TripForm({ onGenerate, isLoading, initialDestination, initialOrigin, initialMembers, onOpenTransportPage }) {
+export default function TripForm({ 
+  formData, 
+  onChangeFormData, 
+  onGenerate, 
+  isLoading, 
+  initialDestination, 
+  initialOrigin, 
+  initialMembers, 
+  onOpenTransportPage 
+}) {
   const todayStr = new Date().toISOString().split('T')[0];
   const defaultEnd = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-  const [origin, setOrigin] = useState(initialOrigin || "");
-  const [destination, setDestination] = useState(initialDestination || "");
-  const [startDate, setStartDate] = useState(todayStr);
-  const [endDate, setEndDate] = useState(defaultEnd);
-  const [budget, setBudget] = useState(15000);
-  const [membersCount, setMembersCount] = useState(initialMembers || 2);
-  const [travelMode, setTravelMode] = useState("road"); // 'road' | 'train' | 'flight'
-  const [selectedInterests, setSelectedInterests] = useState(["Landmarks", "Art & Culture", "Food & Dining"]);
+  // Internal local states used as fallback if formData is not provided
+  const [localOrigin, setLocalOrigin] = useState(initialOrigin || "");
+  const [localDestination, setLocalDestination] = useState(initialDestination || "");
+  const [localStartDate, setLocalStartDate] = useState(todayStr);
+  const [localEndDate, setLocalEndDate] = useState(defaultEnd);
+  const [localBudget, setLocalBudget] = useState(15000);
+  const [localMembersCount, setLocalMembersCount] = useState(initialMembers || 2);
+  const [localTravelMode, setLocalTravelMode] = useState("road"); // 'road' | 'train' | 'flight'
+  const [localInterests, setLocalInterests] = useState(["Landmarks", "Art & Culture", "Food & Dining"]);
+
+  // Use props if formData is provided (persisted across back navigation), else local state
+  const origin = formData ? (formData.origin ?? "") : localOrigin;
+  const destination = formData ? (formData.destination ?? "") : localDestination;
+  const startDate = formData ? (formData.startDate ?? todayStr) : localStartDate;
+  const endDate = formData ? (formData.endDate ?? defaultEnd) : localEndDate;
+  const budget = formData ? (formData.budget ?? 15000) : localBudget;
+  const membersCount = formData ? (formData.membersCount ?? 2) : localMembersCount;
+  const travelMode = formData ? (formData.travelMode ?? "road") : localTravelMode;
+  const selectedInterests = formData ? (formData.selectedInterests ?? ["Landmarks", "Art & Culture", "Food & Dining"]) : localInterests;
+
+  const [validationMessage, setValidationMessage] = useState("");
+  const [budgetError, setBudgetError] = useState("");
+
+  const updateField = (field, value) => {
+    setValidationMessage("");
+    if (formData && onChangeFormData) {
+      onChangeFormData({
+        ...formData,
+        [field]: value
+      });
+    } else {
+      if (field === 'origin') setLocalOrigin(value);
+      if (field === 'destination') setLocalDestination(value);
+      if (field === 'startDate') setLocalStartDate(value);
+      if (field === 'endDate') setLocalEndDate(value);
+      if (field === 'budget') setLocalBudget(value);
+      if (field === 'membersCount') setLocalMembersCount(value);
+      if (field === 'travelMode') setLocalTravelMode(value);
+      if (field === 'selectedInterests') setLocalInterests(value);
+    }
+  };
 
   const isInternational = isInternationalTransit(origin, destination);
-  const [budgetError, setBudgetError] = useState("");
 
   // Calculate minimum budget required for the trip
   const calculateMinRequiredBudget = () => {
@@ -55,21 +96,21 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
   // If international route, railway and road are impossible — default to flight!
   useEffect(() => {
     if (isInternational && travelMode !== "flight") {
-      setTravelMode("flight");
+      updateField('travelMode', 'flight');
     }
   }, [isInternational, travelMode]);
 
   // Selecting transportation mode redirects to the Open Live Transport Browser directly
   const handleSelectMode = (mode) => {
     if (isInternational && (mode === 'road' || mode === 'train')) {
-      alert(`No ${mode === 'train' ? 'railway' : 'road/cab'} transport is possible for this international route. Flight is the only available travel mode.`);
+      setValidationMessage(`Select the appropriate information: No ${mode === 'train' ? 'railway' : 'road/cab'} transport is possible for this international route. Flight is the only available travel mode.`);
       return;
     }
-    setTravelMode(mode);
+    updateField('travelMode', mode);
     if (onOpenTransportPage) {
       onOpenTransportPage({
-        origin: origin.trim() || (isInternational ? "Delhi" : "Vadodara"),
-        destination: destination.trim() || (isInternational ? "Paris" : "Agra"),
+        origin: (origin || "").trim(),
+        destination: (destination || "").trim(),
         startDate,
         travelMode: isInternational ? "flight" : mode,
         membersCount
@@ -78,32 +119,46 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
   };
 
   const toggleInterest = (interest) => {
+    let next;
     if (selectedInterests.includes(interest)) {
       if (selectedInterests.length > 1) {
-        setSelectedInterests(selectedInterests.filter(i => i !== interest));
+        next = selectedInterests.filter(i => i !== interest);
+      } else {
+        next = selectedInterests;
       }
     } else {
-      setSelectedInterests([...selectedInterests, interest]);
+      next = [...selectedInterests, interest];
     }
+    updateField('selectedInterests', next);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const orig = origin.trim();
-    const dest = destination.trim();
-    if (!orig) {
-      alert("Please enter your starting location.");
+    const orig = (origin || "").trim();
+    const dest = (destination || "").trim();
+
+    // Check if user filled all required things appropriately
+    if (!orig || !dest) {
+      setValidationMessage("Select the appropriate information");
       return;
     }
-    if (!dest) {
-      alert("Please enter your destination location.");
+
+    if (orig.toLowerCase() === dest.toLowerCase()) {
+      setValidationMessage("Select the appropriate information: Starting location and destination cannot be identical.");
       return;
     }
+
     if (isBudgetIrrelevant) {
-      setBudgetError(`Irrelevant budget: Selected budget (₹${Number(budget).toLocaleString('en-IN')}) does not fulfill the trip requirement (Minimum ₹${minRequiredBudget.toLocaleString('en-IN')} needed for ${membersCount} traveler(s)).`);
-      setTimeout(() => setBudgetError(""), 5000);
+      setValidationMessage(`Select the appropriate information: Selected budget does not fulfill the trip requirement (Minimum ₹${minRequiredBudget.toLocaleString('en-IN')} needed for ${membersCount} traveler(s)).`);
       return;
     }
+
+    if (!startDate || !endDate || new Date(endDate) < new Date(startDate)) {
+      setValidationMessage("Select the appropriate information: Please select valid departure and return dates.");
+      return;
+    }
+
+    setValidationMessage("");
     setBudgetError("");
     onGenerate({
       origin: orig,
@@ -136,7 +191,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
             <PlaceSearchInput
               label="FROM"
               value={origin}
-              onChange={setOrigin}
+              onChange={(val) => updateField('origin', val)}
               placeholder="Enter starting city (e.g. Vadodara, Delhi, Mumbai...)"
               dark={false}
               required={true}
@@ -149,7 +204,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
             <PlaceSearchInput
               label="TO"
               value={destination}
-              onChange={setDestination}
+              onChange={(val) => updateField('destination', val)}
               placeholder="Enter destination city (e.g. Agra, Jaipur, Varanasi, Goa...)"
               dark={false}
               required={true}
@@ -165,7 +220,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
             </label>
             <select
               value={membersCount}
-              onChange={(e) => setMembersCount(Number(e.target.value))}
+              onChange={(e) => updateField('membersCount', Number(e.target.value))}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm cursor-pointer"
             >
               <option value={1}>1 Solo Traveler</option>
@@ -241,8 +296,8 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
               <button
                 type="button"
                 onClick={() => onOpenTransportPage({
-                  origin: origin.trim() || (isInternational ? "Delhi" : "Vadodara"),
-                  destination: destination.trim() || (isInternational ? "Paris" : "Agra"),
+                  origin: (origin || "").trim(),
+                  destination: (destination || "").trim(),
                   startDate,
                   travelMode: isInternational ? "flight" : travelMode,
                   membersCount
@@ -278,7 +333,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
               step="500"
               required
               value={budget}
-              onChange={(e) => setBudget(e.target.value)}
+              onChange={(e) => updateField('budget', e.target.value)}
               className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-slate-900 font-bold placeholder:text-slate-400 focus:outline-none transition-all text-sm ${
                 isBudgetIrrelevant 
                   ? 'border-rose-400 ring-2 ring-rose-400/20 bg-rose-50/30' 
@@ -310,7 +365,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
               type="date"
               required
               value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => updateField('startDate', e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm"
             />
           </div>
@@ -326,7 +381,7 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
               required
               value={endDate}
               min={startDate}
-              onChange={(e) => setEndDate(e.target.value)}
+              onChange={(e) => updateField('endDate', e.target.value)}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all text-sm"
             />
           </div>
@@ -360,12 +415,29 @@ export default function TripForm({ onGenerate, isLoading, initialDestination, in
           </div>
         </div>
 
+        {/* Prominent Validation Message Banner */}
+        {validationMessage && (
+          <div className="p-4 bg-rose-50 border-2 border-rose-400 rounded-2xl text-rose-900 text-sm font-extrabold flex items-start gap-3 shadow-md animate-bounce-short">
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <p className="font-extrabold text-rose-900 text-sm tracking-wide">
+                {validationMessage}
+              </p>
+              {(!origin?.trim() || !destination?.trim()) && (
+                <p className="text-xs font-medium text-rose-700">
+                  Please provide both your starting location (FROM) and destined location (TO) before generating the itinerary.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Action Button */}
-        <div className="pt-3">
+        <div className="pt-2">
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3 px-6 bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-sky-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3.5 px-6 bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-sky-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>

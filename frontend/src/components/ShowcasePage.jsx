@@ -147,7 +147,7 @@ export default function ShowcasePage({ onSelectDestination, onStartPlanner }) {
     const dest = bookingDest ? bookingDest.trim() : "";
     const orig = bookingOrigin ? bookingOrigin.trim() : "";
     if (!dest) {
-      setDestError("Please select or enter your destination (TO) first to plan your grounded trip!");
+      setDestError("Select the appropriate information");
       setTimeout(() => setDestError(""), 4000);
       return;
     }
