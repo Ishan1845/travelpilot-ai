@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Sparkles, Compass, ShieldCheck, Zap, Navigation, MapPin, 
-  Clock, IndianRupee, ArrowRight, Heart, Award, 
+  Clock, IndianRupee, ArrowRight, Heart, Award, Star,
   Users, Filter, Check, ExternalLink, MessageSquare, Quote
 } from 'lucide-react';
 import QuoteCard from './QuoteCard';
