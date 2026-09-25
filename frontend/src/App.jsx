@@ -587,11 +587,9 @@ export default function App() {
       {/* Indian Flag Watermark Background */}
       <IndianFlagBackground />
 
-      {/* 5-Second High-Resolution Airplane Animation (IgniteMotion YwEPRJVV7V8) */}
+      {/* 2-Second Full-Screen High-Resolution Airplane Animation with Clouds (IgniteMotion YwEPRJVV7V8) */}
       {airplaneAnimation && (
         <AirplaneAnimation5s
-          destination={airplaneAnimation.destination}
-          origin={airplaneAnimation.origin}
           onComplete={() => setAirplaneAnimation(null)}
         />
       )}
