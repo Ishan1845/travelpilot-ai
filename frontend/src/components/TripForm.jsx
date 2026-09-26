@@ -184,13 +184,13 @@ export default function TripForm({
   };
 
   return (
-    <div className="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-8 shadow-sm transition-all card-3d">
+    <div className="traveltour-card p-6 sm:p-8 transition-all">
       <div className="mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-          <Sparkles className="w-6 h-6 text-sky-500" />
+        <h2 className="text-xl sm:text-2xl font-serif font-black text-[#19202E] tracking-tight flex items-center gap-2.5">
+          <Sparkles className="w-6 h-6 text-[#FA5B0F]" />
           Plan Your Next Journey
         </h2>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+        <p className="text-xs sm:text-sm text-slate-500 mt-1 font-normal">
           Select where you are starting from to your destined location, cluster activities geographically, and compute live verified transit.
         </p>
       </div>
@@ -200,7 +200,7 @@ export default function TripForm({
           {/* FROM */}
           <div className="space-y-1.5">
             <PlaceSearchInput
-              label="FROM"
+              label="STARTING FROM"
               value={origin}
               onChange={(val) => updateField('origin', val)}
               placeholder="Enter starting city (e.g. Vadodara, Delhi, Mumbai...)"
@@ -321,7 +321,7 @@ export default function TripForm({
                     membersCount
                   });
                 }}
-                className="w-full mt-2.5 py-2 px-3 bg-gradient-to-r from-sky-50 via-indigo-50 to-teal-50 hover:from-sky-100 hover:to-indigo-100 text-sky-900 border border-sky-200 hover:border-sky-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
+                className="w-full mt-2.5 py-2.5 px-3 bg-[#FFF4EE] hover:bg-[#FFE8DC] text-[#FA5B0F] border border-[#FED7AA] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <span>
                   {isInternational 
@@ -422,11 +422,11 @@ export default function TripForm({
                   onClick={() => toggleInterest(interest)}
                   className={`text-xs font-semibold px-3.5 py-1.5 rounded-xl border transition-all cursor-pointer flex items-center gap-1.5 ${
                     selected
-                      ? 'bg-sky-50 text-sky-700 border-sky-300 ring-2 ring-sky-500/20 shadow-xs'
+                      ? 'bg-[#FFF4EE] text-[#FA5B0F] border-[#FED7AA] ring-2 ring-[#FA5B0F]/20 shadow-xs'
                       : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                   }`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-sky-500' : 'bg-slate-300'}`} />
+                  <span className={`w-1.5 h-1.5 rounded-full ${selected ? 'bg-[#FA5B0F]' : 'bg-slate-300'}`} />
                   {interest}
                 </button>
               );
@@ -456,16 +456,16 @@ export default function TripForm({
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full py-3.5 px-6 bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 hover:from-sky-700 hover:to-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-md shadow-sky-500/20 hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            className="traveltour-btn-primary w-full py-4 px-6 font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
                 <span>Grounding Real Venues, Transit Buffers & Group Costs...</span>
               </>
             ) : (
               <>
-                <Sparkles className="w-4 h-4" />
+                <Sparkles className="w-4 h-4 text-white" />
                 <span>Generate Grounded Itinerary for {membersCount} Member(s)</span>
               </>
             )}

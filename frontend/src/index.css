@@ -88,7 +88,56 @@
 
 .card-3d:hover {
   transform: translateY(-3px);
-  box-shadow: 0 16px 24px -4px rgba(15, 23, 42, 0.08), 0 6px 12px -4px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 16px 24px -4px rgba(25, 32, 46, 0.08), 0 6px 12px -4px rgba(25, 32, 46, 0.04);
+}
+
+/* GoodLayers TravelTour Theme Styling (#FA5B0F, #19202E, #F9F8F6, #FFA800) */
+:root {
+  --tour-orange: #FA5B0F;
+  --tour-orange-hover: #E04B05;
+  --tour-orange-light: #FFF4EE;
+  --tour-navy: #19202E;
+  --tour-navy-dark: #111622;
+  --tour-sand: #F9F8F6;
+  --tour-border: #ECE8E1;
+  --tour-gold: #FFA800;
+}
+
+.traveltour-btn-primary {
+  background-color: #FA5B0F;
+  color: #FFFFFF;
+  font-weight: 800;
+  border-radius: 0.875rem;
+  box-shadow: 0 4px 18px -2px rgba(250, 91, 15, 0.38);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.traveltour-btn-primary:hover {
+  background-color: #E04B05;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px 0 rgba(250, 91, 15, 0.5);
+}
+
+.traveltour-card {
+  background-color: #FFFFFF;
+  border: 1px solid #ECE8E1;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 20px -2px rgba(25, 32, 46, 0.05);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.traveltour-card:hover {
+  transform: translateY(-4px);
+  border-color: #FA5B0F;
+  box-shadow: 0 16px 32px -4px rgba(25, 32, 46, 0.1), 0 4px 12px -2px rgba(250, 91, 15, 0.15);
+}
+
+/* Search Bar Floating Card TravelTour Style */
+.traveltour-search-card {
+  background: #FFFFFF;
+  border: 1px solid #E5E0D8;
+  border-radius: 1.25rem;
+  box-shadow: 0 16px 40px -8px rgba(25, 32, 46, 0.12), 0 4px 12px -2px rgba(25, 32, 46, 0.06);
 }
 
 /* Aurora UI Glowing Gradients matching User Palette: Electric Blue (#007BFF), Vibrant Orange (#FF6A00), Warm Orange (#FF8800), White (#FFFFFF) */
@@ -101,18 +150,19 @@
 }
 
 .aurora-glow-button {
-  background: linear-gradient(135deg, #007BFF 0%, #FF6A00 50%, #FF8800 100%);
-  box-shadow: 0 4px 20px -2px rgba(0, 123, 255, 0.4), 0 4px 25px -2px rgba(255, 106, 0, 0.35);
+  background: #FA5B0F;
+  box-shadow: 0 4px 20px -2px rgba(250, 91, 15, 0.4);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .aurora-glow-button:hover {
+  background: #E04B05;
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 8px 30px 2px rgba(0, 123, 255, 0.5), 0 8px 35px 2px rgba(255, 106, 0, 0.45);
+  box-shadow: 0 8px 30px 2px rgba(250, 91, 15, 0.5);
 }
 
 .aurora-card {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(25, 32, 46, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -123,8 +173,8 @@
 }
 
 .aurora-card-interactive:hover {
-  border-color: rgba(0, 123, 255, 0.6);
-  box-shadow: 0 12px 30px -4px rgba(0, 123, 255, 0.25), 0 8px 25px -4px rgba(255, 106, 0, 0.2);
+  border-color: #FA5B0F;
+  box-shadow: 0 12px 30px -4px rgba(250, 91, 15, 0.25);
   transform: translateY(-4px);
 }
 
