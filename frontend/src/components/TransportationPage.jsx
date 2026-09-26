@@ -169,6 +169,38 @@ export default function TransportationPage({
     });
   };
 
+  if (!optionsData.origin || !optionsData.destination) {
+    return (
+      <div className="space-y-6 animate-fadeIn max-w-2xl mx-auto py-10">
+        <button
+          onClick={onBack}
+          className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl border border-slate-200/90 transition-all flex items-center gap-2 cursor-pointer shadow-xs card-3d group"
+        >
+          <ArrowLeft className="w-4 h-4 text-sky-600 group-hover:-translate-x-1 transition-transform" />
+          <span>{fromForm ? "← Back to Trip Planner" : "← Back to Trip Schedule"}</span>
+        </button>
+
+        <div className="bg-white border-2 border-rose-200 rounded-3xl p-8 text-center space-y-4 shadow-sm card-3d">
+          <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto shadow-xs">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            Inappropriate Information
+          </h2>
+          <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+            Please specify both your starting location (FROM) and destined location (TO) before viewing live verified transportation options.
+          </p>
+          <button
+            onClick={onBack}
+            className="px-5 py-2.5 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md transition-all cursor-pointer"
+          >
+            ← Back to Specify Locations
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Top Header & Navigation */}

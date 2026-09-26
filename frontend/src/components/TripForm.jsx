@@ -100,17 +100,28 @@ export default function TripForm({
     }
   }, [isInternational, travelMode]);
 
-  // Selecting transportation mode redirects to the Open Live Transport Browser directly
+  // Selecting transportation mode
   const handleSelectMode = (mode) => {
-    if (isInternational && (mode === 'road' || mode === 'train')) {
-      setValidationMessage(`Select the appropriate information: No ${mode === 'train' ? 'railway' : 'road/cab'} transport is possible for this international route. Flight is the only available travel mode.`);
+    updateField('travelMode', mode);
+
+    const orig = (origin || "").trim();
+    const dest = (destination || "").trim();
+
+    // If user clicked any transport mode without specifying FROM & TO:
+    if (!orig || !dest) {
+      setValidationMessage("inappropriate information");
       return;
     }
-    updateField('travelMode', mode);
+
+    if (isInternational && (mode === 'road' || mode === 'train')) {
+      setValidationMessage(`inappropriate information: No ${mode === 'train' ? 'railway' : 'road/cab'} transport is possible for this international route. Flight is the only available travel mode.`);
+      return;
+    }
+
     if (onOpenTransportPage) {
       onOpenTransportPage({
-        origin: (origin || "").trim(),
-        destination: (destination || "").trim(),
+        origin: orig,
+        destination: dest,
         startDate,
         travelMode: isInternational ? "flight" : mode,
         membersCount
@@ -139,22 +150,22 @@ export default function TripForm({
 
     // Check if user filled all required things appropriately
     if (!orig || !dest) {
-      setValidationMessage("Select the appropriate information");
+      setValidationMessage("inappropriate information");
       return;
     }
 
     if (orig.toLowerCase() === dest.toLowerCase()) {
-      setValidationMessage("Select the appropriate information: Starting location and destination cannot be identical.");
+      setValidationMessage("inappropriate information: Starting location and destination cannot be identical.");
       return;
     }
 
     if (isBudgetIrrelevant) {
-      setValidationMessage(`Select the appropriate information: Selected budget does not fulfill the trip requirement (Minimum ₹${minRequiredBudget.toLocaleString('en-IN')} needed for ${membersCount} traveler(s)).`);
+      setValidationMessage(`inappropriate information: Selected budget does not fulfill the trip requirement (Minimum ₹${minRequiredBudget.toLocaleString('en-IN')} needed for ${membersCount} traveler(s)).`);
       return;
     }
 
     if (!startDate || !endDate || new Date(endDate) < new Date(startDate)) {
-      setValidationMessage("Select the appropriate information: Please select valid departure and return dates.");
+      setValidationMessage("inappropriate information: Please select valid departure and return dates.");
       return;
     }
 
@@ -295,13 +306,21 @@ export default function TripForm({
             {onOpenTransportPage && (
               <button
                 type="button"
-                onClick={() => onOpenTransportPage({
-                  origin: (origin || "").trim(),
-                  destination: (destination || "").trim(),
-                  startDate,
-                  travelMode: isInternational ? "flight" : travelMode,
-                  membersCount
-                })}
+                onClick={() => {
+                  const orig = (origin || "").trim();
+                  const dest = (destination || "").trim();
+                  if (!orig || !dest) {
+                    setValidationMessage("inappropriate information");
+                    return;
+                  }
+                  onOpenTransportPage({
+                    origin: orig,
+                    destination: dest,
+                    startDate,
+                    travelMode: isInternational ? "flight" : travelMode,
+                    membersCount
+                  });
+                }}
                 className="w-full mt-2.5 py-2 px-3 bg-gradient-to-r from-sky-50 via-indigo-50 to-teal-50 hover:from-sky-100 hover:to-indigo-100 text-sky-900 border border-sky-200 hover:border-sky-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs"
               >
                 <span>
@@ -310,6 +329,14 @@ export default function TripForm({
                     : `🔍 View All Available Road (Ola/Cabs), Railway (IRCTC Trains) & Flights From ${origin || "Selected Location"} →`}
                 </span>
               </button>
+            )}
+
+            {/* Inappropriate information warning right under transportation modes */}
+            {validationMessage && (!origin?.trim() || !destination?.trim()) && (
+              <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs font-extrabold flex items-center gap-2 mt-2 animate-bounce-short shadow-xs">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>inappropriate information: Please specify both FROM & TO locations first.</span>
+              </div>
             )}
           </div>
 

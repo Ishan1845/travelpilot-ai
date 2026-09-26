@@ -51,14 +51,31 @@ export function isInternationalTransit(origin, destination) {
   return isDestForeign || isOrigForeign;
 }
 
-export function getAvailableTransportationOptions(destination = "Agra", origin = null, travelDate = null, membersCount = 1) {
+export function getAvailableTransportationOptions(destination = "", origin = null, travelDate = null, membersCount = 1) {
   const destClean = (destination || "").trim();
   const destLower = destClean.toLowerCase();
-  const origClean = origin ? origin.trim() : (destLower.includes(" to ") ? destLower.split(" to ")[0].trim() : "Delhi");
+  const origClean = origin ? origin.trim() : (destLower.includes(" to ") ? destLower.split(" to ")[0].trim() : "");
   const targetCity = destLower.includes(" to ") ? destLower.split(" to ")[1].trim() : destClean;
   const targetLower = targetCity.toLowerCase();
   const count = Math.max(1, parseInt(membersCount, 10) || 1);
   const dateStr = travelDate || new Date().toISOString().split('T')[0];
+
+  // If destination or origin are not specified, return empty options (no default fallback to Agra / Vadodara)
+  if (!destClean || !origClean) {
+    return {
+      destination: destClean,
+      origin: origClean,
+      travelDate: dateStr,
+      formattedDate: "",
+      membersCount: count,
+      isInternationalRoute: false,
+      isRoadPossible: false,
+      isRailwayPossible: false,
+      road: [],
+      train: [],
+      flight: []
+    };
+  }
 
   // International transit check:
   // Overseas / cross-border routes CANNOT be served by Indian Railways or domestic Ola/Uber cabs!

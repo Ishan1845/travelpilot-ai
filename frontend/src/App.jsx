@@ -506,8 +506,8 @@ export default function App() {
   };
 
   const handleOpenTransportPageFromForm = (params) => {
-    const orig = params.origin !== undefined ? params.origin : tripFormData.origin;
-    const dest = params.destination !== undefined ? params.destination : tripFormData.destination;
+    const orig = (params.origin !== undefined ? params.origin : tripFormData.origin || "").trim();
+    const dest = (params.destination !== undefined ? params.destination : tripFormData.destination || "").trim();
     const mode = params.travelMode || tripFormData.travelMode || "road";
 
     setTripFormData(prev => ({
@@ -519,9 +519,15 @@ export default function App() {
       membersCount: params.membersCount || prev.membersCount
     }));
 
+    // If either orig or dest is empty, never open transport page or show fallback Vadodara to Agra!
+    if (!orig || !dest) {
+      setIsViewingTransportPage(false);
+      return;
+    }
+
     setTransportPageParams({
-      destination: dest || "Agra",
-      origin: orig || "Vadodara",
+      destination: dest,
+      origin: orig,
       travelDate: params.startDate || tripFormData.startDate,
       initialMode: mode,
       membersCount: params.membersCount || tripFormData.membersCount || 1,
@@ -674,8 +680,8 @@ export default function App() {
         {/* DEDICATED TRANSPORTATION OPTIONS PAGE (Road Ola/Uber, Railway IRCTC, Flight) */}
         {isViewingTransportPage ? (
           <TransportationPage 
-            destination={transportPageParams?.destination || itinerary?.metadata?.destination || tripFormData.destination || "Agra"}
-            origin={transportPageParams?.origin || itinerary?.metadata?.origin || tripFormData.origin || "Delhi NCR"}
+            destination={transportPageParams?.destination || itinerary?.metadata?.destination || tripFormData.destination || ""}
+            origin={transportPageParams?.origin || itinerary?.metadata?.origin || tripFormData.origin || ""}
             travelDate={transportPageParams?.travelDate || itinerary?.metadata?.start_date || tripFormData.startDate}
             initialMode={transportPageParams?.initialMode || itinerary?.metadata?.travel_mode || tripFormData.travelMode || "road"}
             membersCount={transportPageParams?.membersCount || itinerary?.metadata?.members_count || tripFormData.membersCount || 1}
