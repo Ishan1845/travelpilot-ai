@@ -330,14 +330,6 @@ export default function TripForm({
                 </span>
               </button>
             )}
-
-            {/* Inappropriate information warning right under transportation modes */}
-            {validationMessage && (!origin?.trim() || !destination?.trim()) && (
-              <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-900 text-xs font-extrabold flex items-center gap-2 mt-2 animate-bounce-short shadow-xs">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                <span>inappropriate information: Please specify both FROM & TO locations first.</span>
-              </div>
-            )}
           </div>
 
           {/* Budget in INR */}
